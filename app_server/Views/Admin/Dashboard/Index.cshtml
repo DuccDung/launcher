@@ -1,26 +1,510 @@
 @{
-    Layout = null;
+    Layout = "~/Views/Admin/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Admin Dashboard | NestG";
+    ViewData["AdminNav"] = "dashboard";
+    ViewData["AdminHeaderTitle"] = "Trung tâm điều hành NestG";
+    ViewData["AdminHeaderSubtitle"] = "Cập nhật theo dữ liệu nội bộ lúc 09:42 - Thứ Bảy, 28/03/2026";
 }
-<!doctype html>
-<html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Dashboard | NestG</title>
-    <link rel="stylesheet" href="~/admin-ui/admin.css" asp-append-version="true" />
-  </head>
-  <body class="admin-auth-body">
-    <div class="admin-auth-layout admin-auth-layout--simple">
-      <section class="admin-auth-card admin-auth-card--simple">
-        <span class="admin-auth-card__eyebrow">Admin Area</span>
-        <h1 class="admin-auth-card__title">Đăng nhập admin thành công</h1>
-        <p class="admin-auth-card__desc">
-          Bạn đang vào khu vực quản trị với role <strong>ADMIN</strong>.
-        </p>
-        <div class="admin-auth-simple-note">
-          Đây là route bảo vệ bằng <code>[Authorize(Roles = "ADMIN")]</code>.
-        </div>
-      </section>
+
+<section class="admin-page-intro">
+  <div>
+    <h1>Bảng điều khiển quản trị tổng hợp</h1>
+    <p>
+      Theo dõi lưu lượng truy cập, hành vi mua hàng, nhu cầu hỗ trợ,
+      doanh thu và các giao dịch banking gần nhất. Tất cả dữ liệu được
+      cập nhật theo thời gian thực để bạn có thể nắm bắt tình hình vận
+      hành và đưa ra quyết định nhanh chóng.
+    </p>
+  </div>
+
+  <div class="admin-page-intro__actions">
+    <button
+      class="admin-button admin-button--secondary"
+      type="button"
+    >
+      <i class="bi bi-download"></i>
+      Xuất báo cáo
+    </button>
+    <button class="admin-button admin-button--primary" type="button">
+      <i class="bi bi-lightning-charge-fill"></i>
+      Đồng bộ dữ liệu
+    </button>
+  </div>
+</section>
+
+<section class="admin-kpi-grid">
+  <article class="admin-kpi-card">
+    <div class="admin-kpi-card__head">
+      <span class="admin-kpi-card__label">Lượt truy cập hôm nay</span>
+      <span class="admin-kpi-card__icon"
+        ><i class="bi bi-activity"></i
+      ></span>
     </div>
-  </body>
-</html>
+    <strong>128,420</strong>
+    <div class="admin-kpi-card__meta">
+      <span class="admin-trend is-up"
+        ><i class="bi bi-arrow-up-right"></i> 18.4%</span
+      >
+      <span>So với hôm qua</span>
+    </div>
+  </article>
+
+  <article class="admin-kpi-card">
+    <div class="admin-kpi-card__head">
+      <span class="admin-kpi-card__label">Mua hàng hoàn tất</span>
+      <span class="admin-kpi-card__icon"
+        ><i class="bi bi-bag-check"></i
+      ></span>
+    </div>
+    <strong>684</strong>
+    <div class="admin-kpi-card__meta">
+      <span class="admin-trend is-up"
+        ><i class="bi bi-arrow-up-right"></i> 9.2%</span
+      >
+      <span>Tỷ lệ chuyển đổi 3.88%</span>
+    </div>
+  </article>
+
+  <article class="admin-kpi-card">
+    <div class="admin-kpi-card__head">
+      <span class="admin-kpi-card__label">User cần trợ giúp</span>
+      <span class="admin-kpi-card__icon"
+        ><i class="bi bi-headset"></i
+      ></span>
+    </div>
+    <strong>27</strong>
+    <div class="admin-kpi-card__meta">
+      <span class="admin-trend is-down"
+        ><i class="bi bi-arrow-down-right"></i> 4</span
+      >
+      <span>Đã giảm so với đầu ca</span>
+    </div>
+  </article>
+
+  <article class="admin-kpi-card">
+    <div class="admin-kpi-card__head">
+      <span class="admin-kpi-card__label">Doanh thu hôm nay</span>
+      <span class="admin-kpi-card__icon"
+        ><i class="bi bi-currency-dollar"></i
+      ></span>
+    </div>
+    <strong>286.4M đ</strong>
+    <div class="admin-kpi-card__meta">
+      <span class="admin-trend is-up"
+        ><i class="bi bi-arrow-up-right"></i> 12.7%</span
+      >
+      <span>Sau ưu đãi và flash sale</span>
+    </div>
+  </article>
+
+  <article class="admin-kpi-card">
+    <div class="admin-kpi-card__head">
+      <span class="admin-kpi-card__label">Lợi nhuận ước tính</span>
+      <span class="admin-kpi-card__icon"
+        ><i class="bi bi-pie-chart-fill"></i
+      ></span>
+    </div>
+    <strong>94.6M đ</strong>
+    <div class="admin-kpi-card__meta">
+      <span class="admin-trend is-up"
+        ><i class="bi bi-arrow-up-right"></i> 8.9%</span
+      >
+      <span>Biên lợi nhuận 33.03%</span>
+    </div>
+  </article>
+</section>
+
+<section class="admin-grid">
+  <article class="admin-panel admin-panel--span-2">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">
+          Xu hướng truy cập & đơn mua
+        </h2>
+        <span class="admin-panel__subtitle">
+          Theo dõi mức tăng trưởng trong 7 ngày gần nhất
+        </span>
+      </div>
+      <span class="admin-panel__pill">Realtime</span>
+    </div>
+    <div class="admin-chart-wrap">
+      <canvas
+        id="trafficOrdersChart"
+        aria-label="Biểu đồ truy cập và đơn hàng"
+      ></canvas>
+    </div>
+  </article>
+
+  <article class="admin-panel">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">Doanh thu & lợi nhuận</h2>
+        <span class="admin-panel__subtitle"
+          >Cơ cấu doanh thu trong ngày</span
+        >
+      </div>
+      <span class="admin-panel__pill">Finance</span>
+    </div>
+
+    <div class="admin-chart-wrap admin-chart-wrap--compact">
+      <canvas
+        id="revenueProfitChart"
+        aria-label="Biểu đồ doanh thu và lợi nhuận"
+      ></canvas>
+    </div>
+
+    <div class="admin-legend">
+      <div class="admin-legend__item">
+        <div class="admin-legend__left">
+          <span
+            class="admin-legend__dot"
+            style="background: #5a8cff"
+          ></span>
+          <span>Doanh thu</span>
+        </div>
+        <span class="admin-legend__value">286.4M đ</span>
+      </div>
+      <div class="admin-legend__item">
+        <div class="admin-legend__left">
+          <span
+            class="admin-legend__dot"
+            style="background: #49d7a8"
+          ></span>
+          <span>Lợi nhuận</span>
+        </div>
+        <span class="admin-legend__value">94.6M đ</span>
+      </div>
+      <div class="admin-legend__item">
+        <div class="admin-legend__left">
+          <span
+            class="admin-legend__dot"
+            style="background: #ff8b4d"
+          ></span>
+          <span>Hoàn tiền</span>
+        </div>
+        <span class="admin-legend__value">12.8M đ</span>
+      </div>
+    </div>
+  </article>
+</section>
+
+<section class="admin-grid admin-grid--bottom">
+  <article class="admin-panel admin-panel--span-2">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">
+          Thể loại được truy cập nhiều nhất
+        </h2>
+        <span class="admin-panel__subtitle">
+          Tỷ trọng truy cập dựa trên hành vi người dùng trong ngày
+        </span>
+      </div>
+      <span class="admin-panel__pill">Category Mix</span>
+    </div>
+
+    <div class="admin-chart-wrap admin-chart-wrap--compact">
+      <canvas
+        id="categoryAccessChart"
+        aria-label="Biểu đồ thể loại truy cập nhiều nhất"
+      ></canvas>
+    </div>
+  </article>
+
+  <article class="admin-panel">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">Người dùng cần trợ giúp</h2>
+        <span class="admin-panel__subtitle">
+          Ưu tiên xử lý các ca đang chờ lâu
+        </span>
+      </div>
+    </div>
+
+    <div class="admin-queue admin-list-scroll">
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Nguyễn Bảo Phúc</strong>
+          <span class="admin-status is-open">Chờ phản hồi</span>
+        </div>
+        <span
+          >Không nhận được mã kích hoạt sau khi thanh toán
+          banking.</span
+        >
+      </article>
+
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Trần Hữu Đức</strong>
+          <span class="admin-status is-progress">Đang xử lý</span>
+        </div>
+        <span
+          >Cần hỗ trợ chuyển tài khoản Steam sang chế độ online.</span
+        >
+      </article>
+
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Lê Nhật Minh</strong>
+          <span class="admin-status is-open">15 phút chờ</span>
+        </div>
+        <span
+          >Yêu cầu kiểm tra giao dịch BIDV chưa cập nhật vào ví.</span
+        >
+      </article>
+
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Hoàng Gia Hân</strong>
+          <span class="admin-status is-resolved">Đã xong</span>
+        </div>
+        <span>Đã gửi lại bản hướng dẫn cài mod qua email.</span>
+      </article>
+    </div>
+  </article>
+</section>
+
+<section class="admin-grid admin-grid--bottom">
+  <article class="admin-panel admin-panel--span-2">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">User vừa nạp tiền banking</h2>
+        <span class="admin-panel__subtitle">
+          Các giao dịch gần nhất cần đối soát nhanh
+        </span>
+      </div>
+      <span class="admin-panel__pill">Banking Queue</span>
+    </div>
+
+    <div class="admin-table-wrap admin-table-wrap--scroll">
+      <table class="admin-data-table">
+        <thead>
+          <tr>
+            <th>Khách hàng</th>
+            <th>Ngân hàng</th>
+            <th>Số tiền</th>
+            <th>Mã giao dịch</th>
+            <th>Thời gian</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">T</span>
+                <div>
+                  <span class="admin-user-cell__name"
+                    >Thanh Tùng</span
+                  >
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-10428</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">VCB</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">500.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              VCB-778921
+            </td>
+            <td data-label="Thời gian">09:36 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-ok">Đã đối soát</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">N</span>
+                <div>
+                  <span class="admin-user-cell__name">Ngọc Huy</span>
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-10396</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">BIDV</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">1.200.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              BIDV-902188
+            </td>
+            <td data-label="Thời gian">09:28 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-check">Chờ duyệt</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">K</span>
+                <div>
+                  <span class="admin-user-cell__name"
+                    >Khánh Linh</span
+                  >
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-10231</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">MBBank</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">350.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              MBB-664201
+            </td>
+            <td data-label="Thời gian">09:11 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-ok">Đã đối soát</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">P</span>
+                <div>
+                  <span class="admin-user-cell__name"
+                    >Phương Anh</span
+                  >
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-10188</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">Techcombank</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">780.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              TCB-448712
+            </td>
+            <td data-label="Thời gian">08:57 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-hold">Cần kiểm tra</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">M</span>
+                <div>
+                  <span class="admin-user-cell__name"
+                    >Minh Khang</span
+                  >
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-10074</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">ACB</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">2.000.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              ACB-218640
+            </td>
+            <td data-label="Thời gian">08:42 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-ok">Đã đối soát</span>
+            </td>
+          </tr>
+
+          <tr>
+            <td data-label="Khách hàng">
+              <div class="admin-user-cell">
+                <span class="admin-user-cell__avatar">H</span>
+                <div>
+                  <span class="admin-user-cell__name">Hải Nam</span>
+                  <span class="admin-user-cell__sub"
+                    >ID: NG-09911</span
+                  >
+                </div>
+              </div>
+            </td>
+            <td data-label="Ngân hàng">
+              <span class="admin-bank-chip">VPBank</span>
+            </td>
+            <td data-label="Số tiền">
+              <span class="admin-amount">150.000 đ</span>
+            </td>
+            <td data-label="Mã giao dịch" class="admin-font-mono">
+              VPB-710254
+            </td>
+            <td data-label="Thời gian">08:25 AM</td>
+            <td data-label="Trạng thái">
+              <span class="admin-status is-check">Chờ duyệt</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </article>
+
+  <article class="admin-panel">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">Tín hiệu vận hành</h2>
+        <span class="admin-panel__subtitle">
+          Điểm cần chú ý trong ca hiện tại
+        </span>
+      </div>
+    </div>
+
+    <div class="admin-queue admin-list-scroll">
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Steam Wallet tăng mạnh</strong>
+          <span class="admin-status is-progress">+22%</span>
+        </div>
+        <span
+          >Nhóm nạp Steam 200K - 500K đang có lượt truy cập vượt dự
+          báo.</span
+        >
+      </article>
+
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Mystery Box Ultimate</strong>
+          <span class="admin-status is-open">Hot item</span>
+        </div>
+        <span
+          >Tỷ lệ click-to-buy tăng 11.8% từ traffic social trong 3 giờ
+          gần đây.</span
+        >
+      </article>
+
+      <article class="admin-queue-card">
+        <div class="admin-queue-card__head">
+          <strong>Top issue hỗ trợ</strong>
+          <span class="admin-status is-check">OTP / Banking</span>
+        </div>
+        <span
+          >Phần lớn phản hồi xoay quanh xác minh nạp tiền và đồng bộ
+          ví.</span
+        >
+      </article>
+    </div>
+  </article>
+</section>

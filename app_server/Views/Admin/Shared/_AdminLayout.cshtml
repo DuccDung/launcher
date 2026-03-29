@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@(ViewData["Title"] ?? "Admin | NestG")</title>
+    <link rel="icon" type="image/png" href="~/admin-ui/assets/img/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&family=Sora:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="~/admin-ui/admin.css" asp-append-version="true" />
+  </head>
+  <body class="admin-body">
+    <div class="admin-app-shell">
+      @await Html.PartialAsync("~/Views/Admin/Shared/_AdminSidebar.cshtml")
+
+      <div class="admin-content-shell">
+        <header class="admin-topbar">
+          <div class="admin-topbar__left">
+            <button
+              class="admin-icon-button admin-sidebar-toggle"
+              type="button"
+              aria-label="Mở menu quản trị"
+              data-admin-sidebar-toggle
+            >
+              <i class="bi bi-list"></i>
+            </button>
+
+            <div class="admin-topbar__title">
+              <strong>@(ViewData["AdminHeaderTitle"] ?? "Trung tâm điều hành NestG")</strong>
+              <span>@(ViewData["AdminHeaderSubtitle"] ?? "Cập nhật theo dữ liệu nội bộ")</span>
+            </div>
+          </div>
+
+          <div class="admin-topbar__right">
+            <div class="admin-topbar-search">
+              <input
+                type="search"
+                placeholder="Tìm user, mã giao dịch, đơn hàng..."
+              />
+              <i class="bi bi-search"></i>
+            </div>
+          </div>
+        </header>
+
+        <main class="admin-main">
+          @RenderBody()
+        </main>
+      </div>
+    </div>
+
+    <div class="admin-sidebar-backdrop" data-admin-sidebar-backdrop></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="~/admin-ui/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+  </body>
+</html>

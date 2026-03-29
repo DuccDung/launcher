@@ -1,0 +1,71 @@
+@{
+    var activeNav = (ViewData["AdminNav"] as string) ?? string.Empty;
+}
+<aside class="admin-sidebar" data-admin-sidebar>
+  <div class="admin-sidebar__head">
+    <div class="admin-sidebar__brand">
+      <div class="admin-sidebar__brand-mark">
+        <img src="~/admin-ui/assets/img/logo.png" alt="NestG" />
+      </div>
+      <div class="admin-sidebar__brand-copy">
+        <strong>NestG</strong>
+        <span>Admin Dashboard</span>
+      </div>
+    </div>
+
+    <button
+      class="admin-icon-button admin-sidebar-close"
+      type="button"
+      aria-label="Đóng menu quản trị"
+      data-admin-sidebar-close
+    >
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+
+  <div class="admin-sidebar__group">
+    <div class="admin-sidebar__label">Tổng quan</div>
+    <nav class="admin-nav">
+      <a href="/admin/dashboard" class="@(activeNav == "dashboard" ? "is-active" : null)">
+        <i class="bi bi-grid-1x2-fill"></i>Dashboard
+      </a>
+      <a href="#">
+        <i class="bi bi-controller"></i>Game catalog
+      </a>
+      <a href="#">
+        <i class="bi bi-pencil-square"></i>Game editor
+      </a>
+      <a href="#">
+        <i class="bi bi-tags-fill"></i>Category & content
+      </a>
+    </nav>
+  </div>
+
+  <div class="admin-sidebar__group">
+    <div class="admin-sidebar__label">Vận hành</div>
+    <nav class="admin-nav">
+      <a href="#">
+        <i class="bi bi-headset"></i>User cần trợ giúp
+      </a>
+      <a href="#">
+        <i class="bi bi-bank2"></i>Nạp tiền banking
+      </a>
+      <a href="#">
+        <i class="bi bi-diagram-3-fill"></i>Danh mục truy cập
+      </a>
+      <a href="#">
+        <i class="bi bi-people-fill"></i>Quản lý record game
+      </a>
+    </nav>
+  </div>
+
+  <div class="admin-sidebar-card">
+    <span class="admin-sidebar-card__eyebrow">Live Snapshot</span>
+    <h3>Độ ổn định hệ thống 99.94%</h3>
+    <p>
+      Không ghi nhận lỗi nghiêm trọng trong 24 giờ gần nhất. Đối soát đơn
+      hàng và luồng banking đang vận hành ổn định.
+    </p>
+    <strong>Last sync 09:42 AM</strong>
+  </div>
+</aside>
