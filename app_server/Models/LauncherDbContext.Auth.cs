@@ -20,5 +20,8 @@ public partial class LauncherDbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK_refresh_tokens_users");
         });
+
+        ConfigureGameCatalogModels(modelBuilder);
+        ConfigureAuthorizationModels(modelBuilder);
     }
 }

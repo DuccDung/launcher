@@ -1,13 +1,12 @@
 using app_server.Contracts.Auth;
-using app_server.Infrastructure;
 using app_server.Services.Auth;
 using Microsoft.AspNetCore.Mvc;
 
 namespace app_server.Controllers.Api;
 
 [ApiController]
-[Route("api/[controller]")]
-public class AuthController(AuthService authService) : ControllerBase
+[Route("api/desktop-auth")]
+public class DesktopAuthController(AuthService authService) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
@@ -23,8 +22,7 @@ public class AuthController(AuthService authService) : ControllerBase
             return BadRequest(new { message = result.Error });
         }
 
-        AuthCookies.AppendAuthCookies(Response, result.Tokens!);
-        return Ok(result.Response);
+        return Ok(CreateClientAuthResponse(result));
     }
 
     [HttpPost("login")]
@@ -41,28 +39,38 @@ public class AuthController(AuthService authService) : ControllerBase
             return Unauthorized(new { message = result.Error });
         }
 
-        AuthCookies.AppendAuthCookies(Response, result.Tokens!);
-        return Ok(result.Response);
+        return Ok(CreateClientAuthResponse(result));
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh(CancellationToken cancellationToken)
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest request, CancellationToken cancellationToken)
     {
-        if (!Request.Cookies.TryGetValue(AuthCookies.RefreshTokenCookieName, out var refreshToken) ||
-            string.IsNullOrWhiteSpace(refreshToken))
+        if (!ModelState.IsValid)
         {
-            AuthCookies.ClearAuthCookies(Response);
-            return Unauthorized(new { message = "Refresh token is missing." });
+            return ValidationProblem(ModelState);
         }
 
-        var result = await authService.RefreshAsync(refreshToken, cancellationToken);
+        var result = await authService.RefreshAsync(request.RefreshToken, cancellationToken);
         if (!result.Success)
         {
-            AuthCookies.ClearAuthCookies(Response);
             return Unauthorized(new { message = result.Error });
         }
 
-        AuthCookies.AppendAuthCookies(Response, result.Tokens!);
-        return Ok(result.Response);
+        return Ok(CreateClientAuthResponse(result));
+    }
+
+    private static ClientAuthResponse CreateClientAuthResponse(AuthResult result)
+    {
+        return new ClientAuthResponse
+        {
+            UserId = result.Response!.UserId,
+            Email = result.Response.Email,
+            Status = result.Response.Status,
+            Roles = result.Response.Roles,
+            AccessToken = result.Tokens!.AccessToken,
+            AccessTokenExpiresAt = result.Tokens.AccessTokenExpiresAt,
+            RefreshToken = result.Tokens.RefreshToken,
+            RefreshTokenExpiresAt = result.Tokens.RefreshTokenExpiresAt
+        };
     }
 }

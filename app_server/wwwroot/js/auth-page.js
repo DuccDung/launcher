@@ -98,18 +98,6 @@ async function postJson(url, payload) {
     return { response, data };
 }
 
-function persistTokens(data) {
-    if (!data?.accessToken || !data?.refreshToken) return;
-
-    localStorage.setItem("access_token", data.accessToken);
-    localStorage.setItem("refresh_token", data.refreshToken);
-    localStorage.setItem("auth_user", JSON.stringify({
-        userId: data.userId,
-        email: data.email,
-        status: data.status
-    }));
-}
-
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
 const loginMessage = document.getElementById("loginMessage");
@@ -136,7 +124,6 @@ loginForm?.addEventListener("submit", async (event) => {
             return;
         }
 
-        persistTokens(data);
         setMessage(loginMessage, "Đăng nhập thành công.", true);
     } catch {
         setMessage(loginMessage, "Không thể kết nối tới máy chủ.", false);
@@ -175,7 +162,6 @@ registerForm?.addEventListener("submit", async (event) => {
             return;
         }
 
-        persistTokens(data);
         setMessage(registerMessage, "Đăng ký thành công.", true);
         registerForm.reset();
     } catch {

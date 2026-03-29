@@ -16,7 +16,7 @@ public class JwtTokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
     public TokenResult GenerateTokens(User user)
     {
         var accessTokenExpiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenMinutes);
-        var claims = new[]
+        var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
@@ -25,6 +25,17 @@ public class JwtTokenService(IOptions<JwtOptions> jwtOptions) : ITokenService
             new Claim(ClaimTypes.Name, user.Email),
             new Claim("status", user.Status)
         };
+
+        var roleCodes = user.UserRoles
+            .Where(x => x.Role is not null && !string.IsNullOrWhiteSpace(x.Role.RoleCode))
+            .Select(x => x.Role.RoleCode)
+            .Distinct(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var roleCode in roleCodes)
+        {
+            claims.Add(new Claim(ClaimTypes.Role, roleCode));
+            claims.Add(new Claim("role", roleCode));
+        }
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtOptions.SecretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);

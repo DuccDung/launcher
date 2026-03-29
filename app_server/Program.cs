@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using app_server.Infrastructure;
 using app_server.Models;
@@ -32,7 +33,21 @@ builder.Services
             ValidIssuer = jwtOptions.Issuer,
             ValidAudience = jwtOptions.Audience,
             IssuerSigningKey = signingKey,
+            RoleClaimType = ClaimTypes.Role,
             ClockSkew = TimeSpan.Zero
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (string.IsNullOrWhiteSpace(context.Token) &&
+                    context.Request.Cookies.TryGetValue(AuthCookies.AccessTokenCookieName, out var accessToken))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
         };
     });
 

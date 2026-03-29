@@ -9,13 +9,23 @@ public class AuthService(
     IPasswordHasher passwordHasher,
     ITokenService tokenService)
 {
-    public async Task<(bool Success, string? Error, AuthResponse? Response)> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
+    private const string DefaultUserRoleCode = "USER";
+
+    public async Task<AuthResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         var exists = await dbContext.Users.AnyAsync(x => x.Email == email, cancellationToken);
         if (exists)
         {
-            return (false, "Email already exists.", null);
+            return new AuthResult { Success = false, Error = "Email already exists." };
+        }
+
+        var defaultRole = await dbContext.Roles
+            .FirstOrDefaultAsync(x => x.RoleCode == DefaultUserRoleCode, cancellationToken);
+
+        if (defaultRole is null)
+        {
+            return new AuthResult { Success = false, Error = $"Default role '{DefaultUserRoleCode}' was not found." };
         }
 
         var utcNow = DateTime.UtcNow;
@@ -38,8 +48,17 @@ public class AuthService(
             UpdatedAt = utcNow
         };
 
+        var userRole = new UserRole
+        {
+            User = user,
+            Role = defaultRole,
+            CreatedAt = utcNow
+        };
+        user.UserRoles.Add(userRole);
+
         dbContext.Users.Add(user);
         dbContext.Profiles.Add(profile);
+        dbContext.UserRoles.Add(userRole);
 
         var tokenResult = tokenService.GenerateTokens(user);
         dbContext.RefreshTokens.Add(new RefreshToken
@@ -52,24 +71,31 @@ public class AuthService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return (true, null, CreateAuthResponse(user, tokenResult));
+        return new AuthResult
+        {
+            Success = true,
+            Response = CreateAuthResponse(user, tokenResult),
+            Tokens = tokenResult
+        };
     }
 
-    public async Task<(bool Success, string? Error, AuthResponse? Response)> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    public async Task<AuthResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await dbContext.Users
+            .Include(x => x.UserRoles)
+            .ThenInclude(x => x.Role)
             .FirstOrDefaultAsync(x => x.Email == email, cancellationToken);
 
         if (user is null || !passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
         {
-            return (false, "Email or password is invalid.", null);
+            return new AuthResult { Success = false, Error = "Email or password is invalid." };
         }
 
         if (string.Equals(user.Status, "banned", StringComparison.OrdinalIgnoreCase) ||
             string.Equals(user.Status, "remove", StringComparison.OrdinalIgnoreCase))
         {
-            return (false, $"User status '{user.Status}' is not allowed to sign in.", null);
+            return new AuthResult { Success = false, Error = $"User status '{user.Status}' is not allowed to sign in." };
         }
 
         var utcNow = DateTime.UtcNow;
@@ -87,19 +113,26 @@ public class AuthService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return (true, null, CreateAuthResponse(user, tokenResult));
+        return new AuthResult
+        {
+            Success = true,
+            Response = CreateAuthResponse(user, tokenResult),
+            Tokens = tokenResult
+        };
     }
 
-    public async Task<(bool Success, string? Error, AuthResponse? Response)> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    public async Task<AuthResult> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
     {
         var refreshTokenHash = tokenService.ComputeRefreshTokenHash(refreshToken);
         var storedToken = await dbContext.RefreshTokens
             .Include(x => x.User)
+            .ThenInclude(x => x.UserRoles)
+            .ThenInclude(x => x.Role)
             .FirstOrDefaultAsync(x => x.TokenHash == refreshTokenHash, cancellationToken);
 
         if (storedToken is null || storedToken.RevokedAt.HasValue || storedToken.ExpiresAt <= DateTime.UtcNow)
         {
-            return (false, "Refresh token is invalid or expired.", null);
+            return new AuthResult { Success = false, Error = "Refresh token is invalid or expired." };
         }
 
         storedToken.RevokedAt = DateTime.UtcNow;
@@ -116,7 +149,12 @@ public class AuthService(
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
-        return (true, null, CreateAuthResponse(storedToken.User, tokenResult));
+        return new AuthResult
+        {
+            Success = true,
+            Response = CreateAuthResponse(storedToken.User, tokenResult),
+            Tokens = tokenResult
+        };
     }
 
     private static AuthResponse CreateAuthResponse(User user, TokenResult tokenResult)
@@ -126,9 +164,12 @@ public class AuthService(
             UserId = user.UserId,
             Email = user.Email,
             Status = user.Status,
-            AccessToken = tokenResult.AccessToken,
+            Roles = user.UserRoles
+                .Where(x => x.Role is not null && !string.IsNullOrWhiteSpace(x.Role.RoleCode))
+                .Select(x => x.Role.RoleCode)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList(),
             AccessTokenExpiresAt = tokenResult.AccessTokenExpiresAt,
-            RefreshToken = tokenResult.RefreshToken,
             RefreshTokenExpiresAt = tokenResult.RefreshTokenExpiresAt
         };
     }

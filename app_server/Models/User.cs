@@ -49,4 +49,10 @@ public partial class User
 
     [InverseProperty("User")]
     public virtual ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
+
+    [InverseProperty(nameof(Review.User))]
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+
+    [InverseProperty(nameof(UserRole.User))]
+    public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }
