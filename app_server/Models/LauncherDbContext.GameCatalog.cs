@@ -36,6 +36,8 @@ public partial class LauncherDbContext
         modelBuilder.Entity<Category>(entity =>
         {
             entity.Property(e => e.CategoryId).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.Status).HasDefaultValue("Published");
+            entity.Property(e => e.DisplayOrder).HasDefaultValue(0);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
         });

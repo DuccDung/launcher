@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace app_server.Models;
 
 [Table("categories")]
+[Index(nameof(Slug), Name = "UX_categories_slug", IsUnique = true)]
 public partial class Category
 {
     [Key]
@@ -14,6 +15,21 @@ public partial class Category
     [Column("name")]
     [StringLength(255)]
     public string Name { get; set; } = null!;
+
+    [Column("slug")]
+    [StringLength(255)]
+    public string? Slug { get; set; }
+
+    [Column("status")]
+    [StringLength(50)]
+    public string Status { get; set; } = null!;
+
+    [Column("display_order")]
+    public int DisplayOrder { get; set; }
+
+    [Column("short_description")]
+    [StringLength(1000)]
+    public string? ShortDescription { get; set; }
 
     [Column("created_at", TypeName = "datetime2(0)")]
     public DateTime CreatedAt { get; set; }
