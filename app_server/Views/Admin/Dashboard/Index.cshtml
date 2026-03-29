@@ -1,0 +1,26 @@
+@{
+    Layout = null;
+}
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard | NestG</title>
+    <link rel="stylesheet" href="~/admin-ui/admin.css" asp-append-version="true" />
+  </head>
+  <body class="admin-auth-body">
+    <div class="admin-auth-layout admin-auth-layout--simple">
+      <section class="admin-auth-card admin-auth-card--simple">
+        <span class="admin-auth-card__eyebrow">Admin Area</span>
+        <h1 class="admin-auth-card__title">Đăng nhập admin thành công</h1>
+        <p class="admin-auth-card__desc">
+          Bạn đang vào khu vực quản trị với role <strong>ADMIN</strong>.
+        </p>
+        <div class="admin-auth-simple-note">
+          Đây là route bảo vệ bằng <code>[Authorize(Roles = "ADMIN")]</code>.
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

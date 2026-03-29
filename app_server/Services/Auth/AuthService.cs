@@ -10,6 +10,7 @@ public class AuthService(
     ITokenService tokenService)
 {
     private const string DefaultUserRoleCode = "USER";
+    private const string AdminRoleCode = "ADMIN";
 
     public async Task<AuthResult> RegisterAsync(RegisterRequest request, CancellationToken cancellationToken)
     {
@@ -79,7 +80,27 @@ public class AuthService(
         };
     }
 
-    public async Task<AuthResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    public Task<AuthResult> LoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    {
+        return LoginInternalAsync(request, requiredRoleCode: null, cancellationToken);
+    }
+
+    public Task<AuthResult> AdminLoginAsync(LoginRequest request, CancellationToken cancellationToken)
+    {
+        return LoginInternalAsync(request, requiredRoleCode: AdminRoleCode, cancellationToken);
+    }
+
+    public Task<AuthResult> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        return RefreshInternalAsync(refreshToken, requiredRoleCode: null, cancellationToken);
+    }
+
+    public Task<AuthResult> AdminRefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    {
+        return RefreshInternalAsync(refreshToken, requiredRoleCode: AdminRoleCode, cancellationToken);
+    }
+
+    private async Task<AuthResult> LoginInternalAsync(LoginRequest request, string? requiredRoleCode, CancellationToken cancellationToken)
     {
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await dbContext.Users
@@ -96,6 +117,11 @@ public class AuthService(
             string.Equals(user.Status, "remove", StringComparison.OrdinalIgnoreCase))
         {
             return new AuthResult { Success = false, Error = $"User status '{user.Status}' is not allowed to sign in." };
+        }
+
+        if (!string.IsNullOrWhiteSpace(requiredRoleCode) && !UserHasRole(user, requiredRoleCode))
+        {
+            return new AuthResult { Success = false, Error = $"User must have role '{requiredRoleCode}'." };
         }
 
         var utcNow = DateTime.UtcNow;
@@ -121,7 +147,7 @@ public class AuthService(
         };
     }
 
-    public async Task<AuthResult> RefreshAsync(string refreshToken, CancellationToken cancellationToken)
+    private async Task<AuthResult> RefreshInternalAsync(string refreshToken, string? requiredRoleCode, CancellationToken cancellationToken)
     {
         var refreshTokenHash = tokenService.ComputeRefreshTokenHash(refreshToken);
         var storedToken = await dbContext.RefreshTokens
@@ -133,6 +159,11 @@ public class AuthService(
         if (storedToken is null || storedToken.RevokedAt.HasValue || storedToken.ExpiresAt <= DateTime.UtcNow)
         {
             return new AuthResult { Success = false, Error = "Refresh token is invalid or expired." };
+        }
+
+        if (!string.IsNullOrWhiteSpace(requiredRoleCode) && !UserHasRole(storedToken.User, requiredRoleCode))
+        {
+            return new AuthResult { Success = false, Error = $"User must have role '{requiredRoleCode}'." };
         }
 
         storedToken.RevokedAt = DateTime.UtcNow;
@@ -155,6 +186,13 @@ public class AuthService(
             Response = CreateAuthResponse(storedToken.User, tokenResult),
             Tokens = tokenResult
         };
+    }
+
+    private static bool UserHasRole(User user, string roleCode)
+    {
+        return user.UserRoles.Any(x =>
+            x.Role is not null &&
+            string.Equals(x.Role.RoleCode, roleCode, StringComparison.OrdinalIgnoreCase));
     }
 
     private static AuthResponse CreateAuthResponse(User user, TokenResult tokenResult)
