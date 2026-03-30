@@ -123,11 +123,11 @@ public partial class LauncherDbContext
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsActive).HasDefaultValue(true);
 
-            entity.HasOne(d => d.Game)
+            entity.HasOne(d => d.Account)
                 .WithMany(p => p.GameFiles)
-                .HasForeignKey(d => d.GameId)
+                .HasForeignKey(d => d.AccountId)
                 .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_game_files_games");
+                .HasConstraintName("FK_game_files_accounts");
         });
 
         modelBuilder.Entity<Media>(entity =>
@@ -136,11 +136,11 @@ public partial class LauncherDbContext
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
 
-            entity.HasOne(d => d.Asset)
+            entity.HasOne(d => d.Game)
                 .WithMany(p => p.MediaItems)
-                .HasForeignKey(d => d.AssetId)
+                .HasForeignKey(d => d.GameId)
                 .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_media_game_files");
+                .HasConstraintName("FK_media_games");
         });
 
         modelBuilder.Entity<Review>(entity =>

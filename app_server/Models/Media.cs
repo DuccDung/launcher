@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace app_server.Models;
 
 [Table("media")]
-[Index(nameof(AssetId), Name = "IX_media_asset_id")]
+[Index(nameof(GameId), Name = "IX_media_asset_id")]
 public partial class Media
 {
     [Key]
@@ -13,7 +13,7 @@ public partial class Media
     public Guid MediaId { get; set; }
 
     [Column("asset_id")]
-    public Guid? AssetId { get; set; }
+    public Guid? GameId { get; set; }
 
     [Column("url")]
     [StringLength(1000)]
@@ -29,7 +29,7 @@ public partial class Media
     [Column("updated_at", TypeName = "datetime2(0)")]
     public DateTime UpdatedAt { get; set; }
 
-    [ForeignKey(nameof(AssetId))]
-    [InverseProperty(nameof(GameFile.MediaItems))]
-    public virtual GameFile? Asset { get; set; }
+    [ForeignKey(nameof(GameId))]
+    [InverseProperty(nameof(Game.MediaItems))]
+    public virtual Game? Game { get; set; }
 }

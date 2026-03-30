@@ -38,11 +38,11 @@ public partial class Game
     [InverseProperty(nameof(GameConfig.Game))]
     public virtual ICollection<GameConfig> GameConfigs { get; set; } = new List<GameConfig>();
 
-    [InverseProperty(nameof(GameFile.Game))]
-    public virtual ICollection<GameFile> GameFiles { get; set; } = new List<GameFile>();
-
     [InverseProperty(nameof(GameVersion.Game))]
     public virtual ICollection<GameVersion> GameVersions { get; set; } = new List<GameVersion>();
+
+    [InverseProperty(nameof(Media.Game))]
+    public virtual ICollection<Media> MediaItems { get; set; } = new List<Media>();
 
     [InverseProperty(nameof(Review.Game))]
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

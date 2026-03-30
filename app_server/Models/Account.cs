@@ -22,6 +22,9 @@ public partial class Account
     [Column("updated_at", TypeName = "datetime2(0)")]
     public DateTime UpdatedAt { get; set; }
 
+    [InverseProperty(nameof(GameFile.Account))]
+    public virtual ICollection<GameFile> GameFiles { get; set; } = new List<GameFile>();
+
     [InverseProperty(nameof(GameVersion.Account))]
     public virtual ICollection<GameVersion> GameVersions { get; set; } = new List<GameVersion>();
 }

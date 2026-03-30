@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 namespace app_server.Models;
 
 [Table("game_files")]
-[Index(nameof(GameId), Name = "IX_game_files_game_id")]
+[Index(nameof(AccountId), Name = "IX_game_files_account_id")]
 public partial class GameFile
 {
     [Key]
     [Column("file_id")]
     public Guid FileId { get; set; }
 
-    [Column("game_id")]
-    public Guid GameId { get; set; }
+    [Column("account_id")]
+    public Guid AccountId { get; set; }
 
     [Column("file_url_01")]
     [StringLength(1000)]
@@ -48,10 +48,7 @@ public partial class GameFile
     [Column("is_active")]
     public bool IsActive { get; set; }
 
-    [ForeignKey(nameof(GameId))]
-    [InverseProperty(nameof(Game.GameFiles))]
-    public virtual Game Game { get; set; } = null!;
-
-    [InverseProperty(nameof(Media.Asset))]
-    public virtual ICollection<Media> MediaItems { get; set; } = new List<Media>();
+    [ForeignKey(nameof(AccountId))]
+    [InverseProperty(nameof(Account.GameFiles))]
+    public virtual Account Account { get; set; } = null!;
 }
