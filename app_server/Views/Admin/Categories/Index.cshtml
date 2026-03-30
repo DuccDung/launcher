@@ -1,0 +1,258 @@
+@{
+    Layout = "~/Views/Admin/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Category CRUD | NestG";
+    ViewData["AdminNav"] = "categories";
+    ViewData["AdminBodyClass"] = "admin-crud-page";
+    ViewData["AdminHeaderTitle"] = "Category CRUD";
+    ViewData["AdminHeaderSubtitle"] = "Tạo mới, cập nhật, xóa và đồng bộ category theo dữ liệu mới nhất.";
+    ViewData["AdminSearchPlaceholder"] = "Tìm category theo tên hoặc slug...";
+    var activeSubNav = (ViewData["AdminSubNav"] as string) ?? "categories-list";
+    var isCreateRoute = activeSubNav == "categories-create";
+}
+
+@section Styles {
+  <link rel="stylesheet" href="~/css/admin-categories.css" asp-append-version="true" />
+}
+
+<section class="admin-page-intro">
+  <div>
+    <h1>Category CRUD cho admin</h1>
+    <p>
+      Trang này lấy giao diện từ file <span class="admin-font-mono">admin_category_create</span>,
+      sau đó nối vào MVC view để admin có thể thêm, sửa, xóa và đồng bộ lại danh sách
+      category ngay trên cùng một màn hình.
+    </p>
+  </div>
+
+  <div class="admin-page-intro__actions">
+    <a class="admin-button admin-button--secondary" href="/admin/dashboard">
+      <i class="bi bi-arrow-left"></i>
+      Về dashboard
+    </a>
+    <a class="admin-button admin-button--primary" href="/admin/categories/create">
+      <i class="bi bi-plus-circle"></i>
+      Tạo category
+    </a>
+  </div>
+</section>
+
+<section class="admin-crud-overview" data-category-summary>
+  <article class="admin-crud-kpi">
+    <span>Tổng category</span>
+    <strong data-summary-total>0</strong>
+    <small>Số category hiện có trong hệ thống.</small>
+  </article>
+
+  <article class="admin-crud-kpi">
+    <span>Published</span>
+    <strong data-summary-published>0</strong>
+    <small>Đang hiển thị trên storefront.</small>
+  </article>
+
+  <article class="admin-crud-kpi">
+    <span>Draft</span>
+    <strong data-summary-draft>0</strong>
+    <small>Chưa xuất bản chính thức.</small>
+  </article>
+
+  <article class="admin-crud-kpi">
+    <span>Cập nhật gần nhất</span>
+    <strong data-summary-updated>Đang tải...</strong>
+    <small data-summary-next-order>Thứ tự tiếp theo: #0</small>
+  </article>
+</section>
+
+<section
+  class="admin-builder-grid admin-builder-grid--crud"
+  data-category-crud-root
+  data-start-mode="@(isCreateRoute ? "create" : "list")"
+>
+  <article class="admin-panel admin-crud-panel admin-crud-panel--form admin-category-form-panel" data-category-form-panel>
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">Form category</h2>
+        <span class="admin-panel__subtitle">
+          Dùng form này để thêm mới hoặc cập nhật category đang chọn.
+        </span>
+      </div>
+      <span class="admin-panel__pill" data-category-mode-badge>Tạo mới</span>
+    </div>
+
+    <div class="admin-category-selection" data-category-selection hidden>
+      <div class="admin-category-selection__copy">
+        <span>Đang chỉnh sửa</span>
+        <strong data-category-selected-name>Chưa chọn</strong>
+      </div>
+      <button
+        class="admin-button admin-button--secondary"
+        type="button"
+        data-category-clear-selection
+      >
+        <i class="bi bi-x-circle"></i>
+        Thoát sửa
+      </button>
+    </div>
+
+    <p class="admin-category-feedback" data-category-feedback hidden></p>
+
+    <form id="adminCategoryForm" class="admin-form-grid" novalidate>
+      <div class="admin-field">
+        <label for="category-name">Tên category</label>
+        <input
+          id="category-name"
+          type="text"
+          placeholder="Ví dụ: Hành động, Soulslike, Co-op..."
+          data-category-input="name"
+        />
+      </div>
+
+      <div class="admin-field">
+        <label for="category-slug">Slug</label>
+        <input
+          id="category-slug"
+          type="text"
+          placeholder="Để trống nếu muốn hệ thống tự tạo slug"
+          data-category-input="slug"
+        />
+      </div>
+
+      <div class="admin-field">
+        <label for="category-status">Trạng thái</label>
+        <select id="category-status" data-category-input="status">
+          <option value="Published">Published</option>
+          <option value="Draft">Draft</option>
+        </select>
+      </div>
+
+      <div class="admin-field">
+        <label for="category-order">Thứ tự hiển thị</label>
+        <input
+          id="category-order"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="0"
+          data-category-input="displayOrder"
+        />
+      </div>
+
+      <div class="admin-field admin-field--full">
+        <label for="category-description">Mô tả ngắn</label>
+        <textarea
+          id="category-description"
+          placeholder="Mô tả ngắn dùng cho admin quản lý category."
+          data-category-input="shortDescription"
+        ></textarea>
+      </div>
+    </form>
+
+    <div class="admin-toolbar-actions admin-crud-actions">
+      <button class="admin-button admin-button--primary" type="button" data-category-create>
+        <i class="bi bi-plus-circle"></i>
+        Thêm category
+      </button>
+      <button
+        class="admin-button admin-button--secondary"
+        type="button"
+        data-category-update
+        disabled
+      >
+        <i class="bi bi-pencil-square"></i>
+        Cập nhật
+      </button>
+      <button
+        class="admin-button admin-button--danger"
+        type="button"
+        data-category-delete
+        disabled
+      >
+        <i class="bi bi-trash3"></i>
+        Xóa
+      </button>
+      <button class="admin-button admin-button--secondary" type="button" data-category-reset>
+        <i class="bi bi-arrow-clockwise"></i>
+        Làm mới
+      </button>
+    </div>
+
+    <div class="admin-crud-summary-grid">
+      <article class="admin-crud-summary-card">
+        <span>Chế độ hiện tại</span>
+        <strong data-category-mode-label>Tạo mới category</strong>
+      </article>
+      <article class="admin-crud-summary-card">
+        <span>Lần đồng bộ gần nhất</span>
+        <strong data-category-sync-label>Đang tải dữ liệu...</strong>
+      </article>
+    </div>
+  </article>
+
+  <aside class="admin-panel admin-crud-panel admin-crud-panel--list">
+    <div class="admin-panel__head">
+      <div>
+        <h2 class="admin-panel__title">Danh sách category</h2>
+        <span class="admin-panel__subtitle">
+          Danh sách được sắp theo thứ tự hiển thị. Bấm sửa để đưa dữ liệu lên form.
+        </span>
+      </div>
+      <span class="admin-panel__pill" data-category-record-count>0 record</span>
+    </div>
+
+    <div class="admin-crud-filter-row">
+      <div class="admin-field">
+        <label for="category-keyword">Từ khóa</label>
+        <input
+          id="category-keyword"
+          type="search"
+          placeholder="Ví dụ: nhập vai, soulslike..."
+          data-category-filter="keyword"
+        />
+      </div>
+
+      <div class="admin-field">
+        <label for="category-filter-status">Lọc trạng thái</label>
+        <select id="category-filter-status" data-category-filter="status">
+          <option value="all">Tất cả</option>
+          <option value="Published">Published</option>
+          <option value="Draft">Draft</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="admin-category-feedback admin-category-feedback--inline" data-category-list-feedback hidden></p>
+
+    <div class="admin-mini-stack admin-list-scroll admin-crud-list" data-category-list></div>
+  </aside>
+</section>
+
+<template id="adminCategoryRecordTemplate">
+  <article class="admin-mini-card admin-crud-record" data-category-record>
+    <div class="admin-record-footer">
+      <strong data-category-record-name></strong>
+      <span class="admin-status" data-category-record-status></span>
+    </div>
+
+    <div class="admin-crud-record__slug" data-category-record-slug></div>
+
+    <div class="admin-chip-row admin-crud-meta">
+      <span class="admin-soft-chip" data-category-record-order></span>
+      <span class="admin-soft-chip" data-category-record-count></span>
+      <span class="admin-soft-chip" data-category-record-updated></span>
+    </div>
+
+    <p class="admin-category-record__description" data-category-record-description></p>
+
+    <div class="admin-toolbar-actions admin-crud-item-actions">
+      <button class="admin-button admin-button--secondary" type="button" data-category-action="edit">
+        Sửa
+      </button>
+      <button class="admin-button admin-button--danger" type="button" data-category-action="delete">
+        Xóa
+      </button>
+    </div>
+  </article>
+</template>
+
+@section Scripts {
+  <script src="~/js/admin-categories.js" asp-append-version="true"></script>
+}

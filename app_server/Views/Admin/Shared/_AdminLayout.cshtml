@@ -20,8 +20,9 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
     <link rel="stylesheet" href="~/admin-ui/admin.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
   </head>
-  <body class="admin-body">
+  <body class="admin-body @(ViewData["AdminBodyClass"] as string)">
     <div class="admin-app-shell">
       @await Html.PartialAsync("~/Views/Admin/Shared/_AdminSidebar.cshtml")
 
@@ -47,7 +48,7 @@
             <div class="admin-topbar-search">
               <input
                 type="search"
-                placeholder="Tìm user, mã giao dịch, đơn hàng..."
+                placeholder="@(ViewData["AdminSearchPlaceholder"] ?? "Tìm user, mã giao dịch, đơn hàng...")"
               />
               <i class="bi bi-search"></i>
             </div>

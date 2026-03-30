@@ -1,5 +1,6 @@
 @{
     var activeNav = (ViewData["AdminNav"] as string) ?? string.Empty;
+    var activeSubNav = (ViewData["AdminSubNav"] as string) ?? string.Empty;
 }
 <aside class="admin-sidebar" data-admin-sidebar>
   <div class="admin-sidebar__head">
@@ -35,8 +36,20 @@
       <a href="#">
         <i class="bi bi-pencil-square"></i>Game editor
       </a>
-      <a href="#">
+      <a href="/admin/categories" class="@(activeNav == "categories" ? "is-active" : null)">
         <i class="bi bi-tags-fill"></i>Category & content
+      </a>
+    </nav>
+  </div>
+
+  <div class="admin-sidebar__group">
+    <div class="admin-sidebar__label">Category</div>
+    <nav class="admin-nav">
+      <a href="/admin/categories/create" class="@(activeSubNav == "categories-create" ? "is-active" : null)">
+        <i class="bi bi-plus-square-fill"></i>Tạo category
+      </a>
+      <a href="/admin/categories" class="@(activeSubNav == "categories-list" ? "is-active" : null)">
+        <i class="bi bi-list-ul"></i>Danh sách category
       </a>
     </nav>
   </div>
