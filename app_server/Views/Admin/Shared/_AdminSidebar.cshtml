@@ -30,14 +30,17 @@
       <a href="/admin/dashboard" class="@(activeNav == "dashboard" ? "is-active" : null)">
         <i class="bi bi-grid-1x2-fill"></i>Dashboard
       </a>
-      <a href="#">
-        <i class="bi bi-controller"></i>Game catalog
-      </a>
-      <a href="#">
-        <i class="bi bi-pencil-square"></i>Game editor
-      </a>
       <a href="/admin/categories" class="@(activeNav == "categories" ? "is-active" : null)">
         <i class="bi bi-tags-fill"></i>Category & content
+      </a>
+    </nav>
+  </div>
+
+  <div class="admin-sidebar__group">
+    <div class="admin-sidebar__label">Game</div>
+    <nav class="admin-nav">
+      <a href="/admin/games/workspace" class="@(activeNav == "games-workspace" ? "is-active" : null)">
+        <i class="bi bi-pencil-square"></i>Quản lý workspace
       </a>
     </nav>
   </div>

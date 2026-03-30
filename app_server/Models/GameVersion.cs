@@ -19,6 +19,10 @@ public partial class GameVersion
     [Column("account_id")]
     public Guid? AccountId { get; set; }
 
+    [Column("version_name")]
+    [StringLength(255)]
+    public string? VersionName { get; set; }
+
     [Column("created_at", TypeName = "datetime2(0)")]
     public DateTime CreatedAt { get; set; }
 

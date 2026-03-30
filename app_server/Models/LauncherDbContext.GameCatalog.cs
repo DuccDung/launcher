@@ -99,6 +99,7 @@ public partial class LauncherDbContext
         modelBuilder.Entity<GameVersion>(entity =>
         {
             entity.Property(e => e.VersionId).HasDefaultValueSql("(newsequentialid())");
+            entity.Property(e => e.VersionName).HasMaxLength(255);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.IsRemoved).HasDefaultValue(false);
