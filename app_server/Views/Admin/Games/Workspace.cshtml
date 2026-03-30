@@ -158,6 +158,10 @@
       </div>
 
       <div class="admin-form-grid admin-compact-grid">
+        <div class="admin-field admin-field--full">
+          <label for="version-name">Version name</label>
+          <input id="version-name" type="text" maxlength="255" placeholder="Ví dụ: Deluxe Edition, v1.0.1..." />
+        </div>
         <div class="admin-field">
           <label for="version-account-id">Account</label>
           <select id="version-account-id"></select>
@@ -203,18 +207,11 @@
       </div>
 
       <div class="admin-form-grid admin-compact-grid">
-        <div class="admin-field">
+        <div class="admin-field admin-field--full">
           <label for="account-is-active">IsActive</label>
           <select id="account-is-active">
             <option value="true">true</option>
             <option value="false">false</option>
-          </select>
-        </div>
-        <div class="admin-field">
-          <label for="account-is-purchased">IsPurchased</label>
-          <select id="account-is-purchased">
-            <option value="false">false</option>
-            <option value="true">true</option>
           </select>
         </div>
       </div>

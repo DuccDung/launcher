@@ -25,6 +25,9 @@ public sealed class AdminGameUpsertRequest
 
 public sealed class AdminGameVersionUpsertRequest
 {
+    [StringLength(255)]
+    public string? VersionName { get; set; }
+
     public Guid? AccountId { get; set; }
 
     public bool IsRemoved { get; set; }
@@ -122,6 +125,7 @@ public sealed record AdminWorkspaceGameResponse(
 public sealed record AdminWorkspaceVersionResponse(
     Guid VersionId,
     Guid GameId,
+    string? VersionName,
     Guid? AccountId,
     bool IsRemoved,
     DateTime UpdatedAt);

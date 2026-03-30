@@ -148,6 +148,7 @@ public sealed class AdminGameWorkspaceController(
         var version = new GameVersion
         {
             GameId = gameId,
+            VersionName = CleanOptionalText(request.VersionName),
             AccountId = request.AccountId,
             IsRemoved = request.IsRemoved,
             CreatedAt = timestamp,
@@ -174,6 +175,7 @@ public sealed class AdminGameWorkspaceController(
             return BadRequest(new { message = "Account được chọn không tồn tại." });
         }
 
+        version.VersionName = CleanOptionalText(request.VersionName);
         version.AccountId = request.AccountId;
         version.IsRemoved = request.IsRemoved;
         version.UpdatedAt = DateTime.UtcNow;
@@ -203,7 +205,7 @@ public sealed class AdminGameWorkspaceController(
         var account = new Account
         {
             IsActive = request.IsActive,
-            IsPurchased = request.IsPurchased,
+            IsPurchased = false,
             CreatedAt = timestamp,
             UpdatedAt = timestamp
         };
@@ -223,7 +225,6 @@ public sealed class AdminGameWorkspaceController(
         }
 
         account.IsActive = request.IsActive;
-        account.IsPurchased = request.IsPurchased;
         account.UpdatedAt = DateTime.UtcNow;
 
         await dbContext.SaveChangesAsync(cancellationToken);
@@ -711,6 +712,7 @@ public sealed class AdminGameWorkspaceController(
             .Select(item => new AdminWorkspaceVersionResponse(
                 item.VersionId,
                 item.GameId,
+                item.VersionName,
                 item.AccountId,
                 item.IsRemoved,
                 item.UpdatedAt))

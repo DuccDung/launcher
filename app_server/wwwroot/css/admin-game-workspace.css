@@ -260,6 +260,18 @@
     0 0 0 1px rgba(90, 140, 255, 0.08);
 }
 
+.admin-crud-meta .admin-soft-chip--sold {
+  color: #ffd8e3;
+  background: rgba(236, 89, 129, 0.16);
+  border-color: rgba(236, 89, 129, 0.34);
+}
+
+.admin-crud-meta .admin-soft-chip--unsold {
+  color: #cbfff1;
+  background: rgba(62, 201, 157, 0.14);
+  border-color: rgba(62, 201, 157, 0.3);
+}
+
 @media (max-width: 767.98px) {
   .admin-workspace-link-list {
     gap: 6px;

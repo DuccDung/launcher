@@ -47,10 +47,10 @@
     gameOldPrice: q("game-old-price"),
     gameNewPrice: q("game-new-price"),
     gameSlug: q("game-slug-preview"),
+    versionName: q("version-name"),
     versionAccount: q("version-account-id"),
     versionRemoved: q("version-is-removed"),
     accountActive: q("account-is-active"),
-    accountPurchased: q("account-is-purchased"),
     fileAccount: q("file-account-id"),
     fileType: q("file-type"),
     fileActive: q("file-is-active"),
@@ -186,7 +186,15 @@
   }
 
   function versionName(item) {
-    return `Version ${short(item?.versionId)}`;
+    return trim(item?.versionName) || `Version ${short(item?.versionId)}`;
+  }
+
+  function purchaseLabel(isPurchased) {
+    return isPurchased ? "Đã bán" : "Chưa bán";
+  }
+
+  function purchaseChipClass(isPurchased) {
+    return isPurchased ? "admin-soft-chip--sold" : "admin-soft-chip--unsold";
   }
 
   function money(value) {
@@ -801,6 +809,7 @@
   function renderVersionPanel() {
     const ids = new Set(linkedIds());
     const current = s.detail?.versions.find((item) => item.versionId === s.versionId);
+    r.versionName.value = current?.versionName || "";
     r.versionAccount.innerHTML = [
       '<option value="">Chưa gắn account</option>',
       ...accs()
@@ -842,7 +851,7 @@
               return `
                 <article class="admin-mini-card admin-crud-record admin-workspace-record ${item.versionId === s.versionId ? "is-selected" : ""}">
                   <div class="admin-record-footer">
-                    <strong>Version ${e(short(item.versionId))}</strong>
+                    <strong>${e(versionName(item))}</strong>
                     <small>${e(dt(item.updatedAt))}</small>
                   </div>
                   <div class="admin-crud-record__slug">${e(detailLines[0])} · #${e(short(item.versionId))}</div>
@@ -882,7 +891,6 @@
     );
 
     r.accountActive.value = String(current?.isActive ?? true);
-    r.accountPurchased.value = String(current?.isPurchased ?? false);
     r.accountCount.textContent = `${list.length} record`;
 
     r.accountList.innerHTML = list.length
@@ -894,16 +902,16 @@
                   <strong>Account ${e(short(item.accountId))}</strong>
                   <small>${e(dt(item.updatedAt))}</small>
                 </div>
-                <div class="admin-chip-row admin-crud-meta">
-                  <span class="admin-soft-chip ${item.isActive ? "is-active" : ""}">${e(
-                    item.isActive ? "Active" : "Inactive"
-                  )}</span>
-                  <span class="admin-soft-chip ${item.isPurchased ? "is-active" : ""}">${e(
-                    item.isPurchased ? "Purchased" : "Open"
-                  )}</span>
-                  <span class="admin-soft-chip">${e(`${item.linkedVersionCount} version`)}</span>
-                  <span class="admin-soft-chip">${e(`${item.gameFileCount} file`)}</span>
-                </div>
+                  <div class="admin-chip-row admin-crud-meta">
+                    <span class="admin-soft-chip ${item.isActive ? "is-active" : ""}">${e(
+                      item.isActive ? "Active" : "Inactive"
+                    )}</span>
+                    <span class="admin-soft-chip ${purchaseChipClass(item.isPurchased)}">${e(
+                      purchaseLabel(item.isPurchased)
+                    )}</span>
+                    <span class="admin-soft-chip">${e(`${item.linkedVersionCount} version`)}</span>
+                    <span class="admin-soft-chip">${e(`${item.gameFileCount} file`)}</span>
+                  </div>
                 <p class="admin-workspace-record__description">${e(
                   ids.has(item.accountId)
                     ? "Account này đang gắn với game đang mở."
@@ -1178,10 +1186,10 @@
       r[key].disabled = off || !enabled;
     });
 
-    [r.versionAccount, r.versionRemoved].forEach((item) => {
+    [r.versionName, r.versionAccount, r.versionRemoved].forEach((item) => {
       item.disabled = off || !hasGame;
     });
-    [r.accountActive, r.accountPurchased].forEach((item) => {
+    [r.accountActive].forEach((item) => {
       item.disabled = off;
     });
     [r.fileAccount, r.fileType, r.fileActive, ...r.fileUrls, ...r.fileBtns].forEach((item) => {
@@ -1289,15 +1297,17 @@
 
   function versionPayload() {
     return {
+      versionName: trim(r.versionName.value),
       accountId: r.versionAccount.value || null,
       isRemoved: bool(r.versionRemoved.value)
     };
   }
 
   function accountPayload() {
+    const current = accs().find((item) => item.accountId === s.accountId);
     return {
       isActive: bool(r.accountActive.value),
-      isPurchased: bool(r.accountPurchased.value)
+      isPurchased: current?.isPurchased ?? false
     };
   }
 
@@ -1442,7 +1452,10 @@
     await runAction("Không thể tạo account.", async () => {
       const response = await req("/api/admin/game-workspace/accounts", {
         method: "POST",
-        body: JSON.stringify(accountPayload())
+        body: JSON.stringify({
+          isActive: bool(r.accountActive.value),
+          isPurchased: false
+        })
       });
       s.accountId = response.accountId || null;
       await reload({ gameId: s.gameId, message: response.message || "Đã tạo account mới." });
