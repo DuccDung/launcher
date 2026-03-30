@@ -50,6 +50,7 @@
     versionName: q("version-name"),
     versionAccount: q("version-account-id"),
     versionRemoved: q("version-is-removed"),
+    accountVersion: q("account-version-id"),
     accountActive: q("account-is-active"),
     fileAccount: q("file-account-id"),
     fileType: q("file-type"),
@@ -290,6 +291,18 @@
 
   function linkedAccs() {
     return accs().filter((item) => linkedIds().includes(item.accountId));
+  }
+
+  function versions() {
+    return s.detail?.versions ?? [];
+  }
+
+  function linkedVersionForAccount(accountId = s.accountId) {
+    return versions().find((item) => item.accountId === accountId) ?? null;
+  }
+
+  function creatableVersions() {
+    return versions().filter((item) => !item.accountId);
   }
 
   function curBlock() {
@@ -883,6 +896,10 @@
   function renderAccountPanel() {
     const current = accs().find((item) => item.accountId === s.accountId);
     const ids = new Set(linkedIds());
+    const currentLinkedVersion = linkedVersionForAccount();
+    const availableVersions = current
+      ? versions().filter((item) => !item.accountId || item.accountId === current.accountId)
+      : creatableVersions();
     const list = [...accs()].sort(
       (left, right) =>
         Number(ids.has(right.accountId)) -
@@ -890,6 +907,22 @@
         new Date(right.updatedAt) - new Date(left.updatedAt)
     );
 
+    r.accountVersion.innerHTML = !s.gameId
+      ? '<option value="">Chọn game trước</option>'
+      : !versions().length
+        ? '<option value="">Tạo version trước</option>'
+        : !availableVersions.length
+          ? '<option value="">Không còn version trống</option>'
+          : availableVersions
+              .map(
+                (item) =>
+                  `<option value="${e(item.versionId)}">${e(
+                    `${versionName(item)} · ${item.isRemoved ? "Removed" : "Live"}`
+                  )}</option>`
+              )
+              .join("");
+
+    r.accountVersion.value = currentLinkedVersion?.versionId || availableVersions[0]?.versionId || "";
     r.accountActive.value = String(current?.isActive ?? true);
     r.accountCount.textContent = `${list.length} record`;
 
@@ -1136,6 +1169,7 @@
     const hasArticle = Boolean(curArticle());
     const hasBlock = Boolean(curBlock());
     const canBlockUpload = hasBlock && ["image", "video"].includes(curBlock().type);
+    const canCreateAccount = hasGame && !hasAccount && creatableVersions().length > 0;
     const off = busy();
 
     setPanel("version", !hasGame);
@@ -1150,7 +1184,7 @@
       ["gameCreate", !hasGame],
       ["gameReset", true],
       ["versionReset", true],
-      ["accountCreate", true],
+      ["accountCreate", canCreateAccount],
       ["accountReset", true],
       ["fileReset", true],
       ["mediaReset", true],
@@ -1189,9 +1223,8 @@
     [r.versionName, r.versionAccount, r.versionRemoved].forEach((item) => {
       item.disabled = off || !hasGame;
     });
-    [r.accountActive].forEach((item) => {
-      item.disabled = off;
-    });
+    r.accountVersion.disabled = off || hasAccount || !hasGame || !creatableVersions().length;
+    r.accountActive.disabled = off || (!hasAccount && !canCreateAccount);
     [r.fileAccount, r.fileType, r.fileActive, ...r.fileUrls, ...r.fileBtns].forEach((item) => {
       item.disabled = off || !hasGame || !linkedAccs().length;
     });
@@ -1306,6 +1339,7 @@
   function accountPayload() {
     const current = accs().find((item) => item.accountId === s.accountId);
     return {
+      versionId: current ? linkedVersionForAccount(current.accountId)?.versionId || null : r.accountVersion.value || null,
       isActive: bool(r.accountActive.value),
       isPurchased: current?.isPurchased ?? false
     };
@@ -1407,6 +1441,12 @@
     }
 
     await runAction("Không thể tạo version.", async () => {
+      if (!trim(r.versionName.value)) {
+        msg("Version name là bắt buộc.", "error");
+        r.versionName.focus();
+        return;
+      }
+
       const response = await req(`/api/admin/game-workspace/games/${s.gameId}/versions`, {
         method: "POST",
         body: JSON.stringify(versionPayload())
@@ -1423,6 +1463,12 @@
     }
 
     await runAction("Không thể cập nhật version.", async () => {
+      if (!trim(r.versionName.value)) {
+        msg("Version name là bắt buộc.", "error");
+        r.versionName.focus();
+        return;
+      }
+
       const response = await req(`/api/admin/game-workspace/versions/${s.versionId}`, {
         method: "PUT",
         body: JSON.stringify(versionPayload())
@@ -1449,13 +1495,25 @@
   }
 
   async function createAccount() {
+    if (!s.gameId) {
+      msg("Hãy chọn game trước khi tạo account.", "error");
+      return;
+    }
+
+    if (!creatableVersions().length) {
+      msg("Hãy tạo version trước rồi mới tạo account.", "error");
+      return;
+    }
+
+    if (!r.accountVersion.value) {
+      msg("Hãy chọn version để liên kết account.", "error");
+      r.accountVersion.focus();
+      return;
+    }
     await runAction("Không thể tạo account.", async () => {
       const response = await req("/api/admin/game-workspace/accounts", {
         method: "POST",
-        body: JSON.stringify({
-          isActive: bool(r.accountActive.value),
-          isPurchased: false
-        })
+        body: JSON.stringify(accountPayload())
       });
       s.accountId = response.accountId || null;
       await reload({ gameId: s.gameId, message: response.message || "Đã tạo account mới." });

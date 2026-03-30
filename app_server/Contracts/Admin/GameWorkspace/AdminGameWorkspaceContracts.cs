@@ -35,6 +35,8 @@ public sealed class AdminGameVersionUpsertRequest
 
 public sealed class AdminAccountUpsertRequest
 {
+    public Guid? VersionId { get; set; }
+
     public bool IsActive { get; set; }
 
     public bool IsPurchased { get; set; }

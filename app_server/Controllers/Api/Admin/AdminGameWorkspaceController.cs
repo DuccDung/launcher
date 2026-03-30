@@ -133,6 +133,11 @@ public sealed class AdminGameWorkspaceController(
     [HttpPost("games/{gameId:guid}/versions")]
     public async Task<IActionResult> CreateVersion(Guid gameId, [FromBody] AdminGameVersionUpsertRequest request, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.VersionName))
+        {
+            return BadRequest(new { message = "Version name là bắt buộc." });
+        }
+
         if (!await dbContext.Games.AnyAsync(item => item.GameId == gameId, cancellationToken))
         {
             return NotFound(new { message = "Không tìm thấy game để tạo version." });
@@ -163,6 +168,11 @@ public sealed class AdminGameWorkspaceController(
     [HttpPut("versions/{versionId:guid}")]
     public async Task<IActionResult> UpdateVersion(Guid versionId, [FromBody] AdminGameVersionUpsertRequest request, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrWhiteSpace(request.VersionName))
+        {
+            return BadRequest(new { message = "Version name là bắt buộc." });
+        }
+
         var version = await dbContext.GameVersions.SingleOrDefaultAsync(item => item.VersionId == versionId, cancellationToken);
         if (version is null)
         {
@@ -201,6 +211,22 @@ public sealed class AdminGameWorkspaceController(
     [HttpPost("accounts")]
     public async Task<IActionResult> CreateAccount([FromBody] AdminAccountUpsertRequest request, CancellationToken cancellationToken)
     {
+        if (!request.VersionId.HasValue)
+        {
+            return BadRequest(new { message = "Hãy chọn version trước khi tạo account." });
+        }
+
+        var version = await dbContext.GameVersions.SingleOrDefaultAsync(item => item.VersionId == request.VersionId.Value, cancellationToken);
+        if (version is null)
+        {
+            return BadRequest(new { message = "Version được chọn không tồn tại." });
+        }
+
+        if (version.AccountId.HasValue)
+        {
+            return Conflict(new { message = "Version này đã gắn với account khác." });
+        }
+
         var timestamp = DateTime.UtcNow;
         var account = new Account
         {
@@ -211,6 +237,9 @@ public sealed class AdminGameWorkspaceController(
         };
 
         dbContext.Accounts.Add(account);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        version.AccountId = account.AccountId;
+        version.UpdatedAt = timestamp;
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new { message = "Đã tạo account mới.", accountId = account.AccountId });
     }
