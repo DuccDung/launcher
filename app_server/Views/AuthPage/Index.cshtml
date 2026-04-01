@@ -8,6 +8,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tài khoản | Deluxe Gaming</title>
     <link rel="icon" type="image/png" href="~/ui/assets/img/logo.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Saira+Semi+Condensed:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
@@ -89,66 +92,269 @@
         </header>
 
         <main class="auth-page-main auth-page-main--experience">
-            <section class="auth-experience-section" aria-labelledby="authExperienceTitle">
+            <section class="auth-experience-section" aria-labelledby="authPageTitle">
                 <div class="container">
-                    <div class="auth-experience-grid auth-experience-grid--single">
-                        <section class="auth-workspace-panel auth-workspace-panel--login-only">
-                            <div class="auth-workspace-head auth-workspace-head--compact">
-                                <div>
-                                    <p class="auth-workspace-kicker">Account Console</p>
-                                    <h1 id="authExperienceTitle" class="auth-workspace-title">Đăng nhập tài khoản</h1>
-                                    <p class="auth-workspace-subtitle">Giữ lại đúng form đăng nhập và tối ưu lại bố cục để hiển thị gọn trên desktop, tablet và mobile.</p>
-                                </div>
-                                <div id="authGlobalBadge" class="auth-global-badge">
-                                    <i class="bi bi-lightning-charge"></i>
-                                    <span>Sẵn sàng</span>
-                                </div>
+                    <div class="auth-shell">
+                        <div class="auth-shell-head">
+                            <div class="auth-shell-brand">
+                                <p class="auth-brand-mark">
+                                    <span class="auth-brand-mark__base">Deluxe</span>
+                                    <span class="auth-brand-mark__accent">Gaming</span>
+                                </p>
+                                <h1 id="authPageTitle" class="auth-shell-title">Đăng nhập và đăng ký</h1>
                             </div>
+                            <div class="auth-view-switch" role="tablist" aria-label="Chuyển biểu mẫu tài khoản">
+                                <button class="auth-view-switch__button is-active" type="button" data-auth-focus="login" data-auth-view="login" aria-pressed="true">Đăng nhập</button>
+                                <button class="auth-view-switch__button" type="button" data-auth-focus="register" data-auth-view="register" aria-pressed="false">Đăng ký</button>
+                            </div>
+                        </div>
 
-                            <div class="auth-stage-stack auth-stage-stack--single">
-                                <section class="auth-stage-panel auth-stage-panel--flat is-active" data-auth-stage="login">
-                                    <div class="auth-panel-header">
-                                        <p class="auth-panel-kicker">Đăng nhập</p>
-                                        <h3>Truy cập tài khoản hiện có</h3>
-                                        <p class="auth-panel-copy">Nhập email và mật khẩu để đăng nhập. Giao diện đã được rút gọn để tập trung hoàn toàn vào thao tác chính.</p>
+                        <div class="auth-grid">
+                            <section id="authLoginCard" class="auth-card auth-card--login is-active" aria-labelledby="authLoginTitle">
+                                <div class="auth-card-head">
+                                    <h2 id="authLoginTitle" class="auth-card-title">Đăng nhập</h2>
+                                </div>
+
+                                <form id="loginForm" class="auth-form" novalidate>
+                                    <div class="auth-field">
+                                        <label for="authLoginEmail">Email</label>
+                                        <div class="auth-input-shell">
+                                            <span class="auth-input-icon"><i class="bi bi-at"></i></span>
+                                            <input id="authLoginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
+                                        </div>
                                     </div>
 
-                                    <form id="loginForm" class="auth-form auth-form--login-only" novalidate>
-                                        <div class="auth-field">
-                                            <label for="authLoginEmail">Email</label>
-                                            <div class="auth-input-shell">
-                                                <span class="auth-input-icon"><i class="bi bi-at"></i></span>
-                                                <input id="authLoginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
-                                            </div>
+                                    <div class="auth-field">
+                                        <label for="authLoginPassword">Mật khẩu</label>
+                                        <div class="auth-input-shell auth-input-shell--password">
+                                            <span class="auth-input-icon"><i class="bi bi-shield-lock"></i></span>
+                                            <input id="authLoginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" />
+                                            <button class="auth-password-toggle" type="button" data-password-toggle="authLoginPassword" aria-label="Hiện mật khẩu">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
                                         </div>
+                                    </div>
 
+                                    <div class="auth-actions auth-actions--login">
+                                        <button class="auth-button auth-button--primary auth-button--full" type="submit">
+                                            <i class="bi bi-box-arrow-in-right"></i>
+                                            <span>Đăng nhập</span>
+                                        </button>
+                                    </div>
+
+                                    <p id="loginMessage" class="auth-status" hidden aria-live="polite"></p>
+                                </form>
+
+                                <div class="auth-links-row">
+                                    <button class="auth-text-link" type="button" data-auth-focus="register">Đăng ký</button>
+                                    <span class="auth-links-separator" aria-hidden="true"></span>
+                                    <button class="auth-text-link" type="button" data-auth-open="forgot">Quên mật khẩu</button>
+                                </div>
+                            </section>
+
+                            <section id="authRegisterCard" class="auth-card auth-card--register" aria-labelledby="authRegisterTitle">
+                                <div class="auth-card-head">
+                                    <h2 id="authRegisterTitle" class="auth-card-title">Đăng ký</h2>
+                                </div>
+
+                                <form id="registerForm" class="auth-form" novalidate>
+                                    <div class="auth-field">
+                                        <label for="authRegisterDisplayName">Tên hiển thị</label>
+                                        <div class="auth-input-shell">
+                                            <span class="auth-input-icon"><i class="bi bi-person-badge"></i></span>
+                                            <input id="authRegisterDisplayName" type="text" autocomplete="nickname" placeholder="Ví dụ: Dũng Deluxe" />
+                                        </div>
+                                    </div>
+
+                                    <div class="auth-field">
+                                        <label for="authRegisterEmail">Email</label>
+                                        <div class="auth-input-shell">
+                                            <span class="auth-input-icon"><i class="bi bi-envelope-paper"></i></span>
+                                            <input id="authRegisterEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+                                        </div>
+                                    </div>
+
+                                    <div class="auth-form-grid">
                                         <div class="auth-field">
-                                            <label for="authLoginPassword">Mật khẩu</label>
+                                            <label for="authRegisterPassword">Mật khẩu</label>
                                             <div class="auth-input-shell auth-input-shell--password">
-                                                <span class="auth-input-icon"><i class="bi bi-shield-lock"></i></span>
-                                                <input id="authLoginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" />
-                                                <button class="auth-password-toggle" type="button" data-password-toggle="authLoginPassword" aria-label="Hiện mật khẩu">
+                                                <span class="auth-input-icon"><i class="bi bi-key"></i></span>
+                                                <input id="authRegisterPassword" type="password" autocomplete="new-password" placeholder="Ít nhất 6 ký tự" />
+                                                <button class="auth-password-toggle" type="button" data-password-toggle="authRegisterPassword" aria-label="Hiện mật khẩu">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
                                             </div>
                                         </div>
 
-                                        <div class="auth-actions auth-actions--stacked">
-                                            <button class="auth-button auth-button--primary auth-button--full" type="submit">
-                                                <i class="bi bi-box-arrow-in-right"></i>
-                                                <span>Đăng nhập</span>
-                                            </button>
+                                        <div class="auth-field">
+                                            <label for="authRegisterConfirm">Nhập lại mật khẩu</label>
+                                            <div class="auth-input-shell auth-input-shell--password">
+                                                <span class="auth-input-icon"><i class="bi bi-check2-circle"></i></span>
+                                                <input id="authRegisterConfirm" type="password" autocomplete="new-password" placeholder="Xác nhận mật khẩu" />
+                                                <button class="auth-password-toggle" type="button" data-password-toggle="authRegisterConfirm" aria-label="Hiện mật khẩu xác nhận">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
                                         </div>
+                                    </div>
 
-                                        <p id="loginMessage" class="auth-status" hidden aria-live="polite"></p>
-                                    </form>
-                                </section>
-                            </div>
-                        </section>
+                                    <div class="auth-actions">
+                                        <button class="auth-button auth-button--primary auth-button--full" type="submit">
+                                            <i class="bi bi-person-plus"></i>
+                                            <span>Tạo tài khoản</span>
+                                        </button>
+                                    </div>
+
+                                    <p id="registerMessage" class="auth-status" hidden aria-live="polite"></p>
+                                </form>
+
+                                <div class="auth-links-row auth-links-row--secondary">
+                                    <button class="auth-text-link" type="button" data-auth-focus="login">Về đăng nhập</button>
+                                </div>
+                            </section>
+                        </div>
                     </div>
                 </div>
             </section>
         </main>
+    </div>
+
+    <div id="authFlowOverlay" class="auth-flow-overlay" hidden>
+        <button class="auth-flow-backdrop" type="button" data-auth-close aria-label="Đóng cửa sổ tài khoản"></button>
+
+        <section class="auth-flow-dialog" role="dialog" aria-modal="true" aria-label="Tài khoản">
+            <button class="auth-flow-close" type="button" data-auth-close aria-label="Đóng">
+                <i class="bi bi-x-lg"></i>
+            </button>
+
+            <div class="auth-flow-shell">
+                <p class="auth-brand-mark auth-brand-mark--compact">
+                    <span class="auth-brand-mark__base">Deluxe</span>
+                    <span class="auth-brand-mark__accent">Gaming</span>
+                </p>
+
+                <section class="auth-stage-panel" data-auth-stage="verify">
+                    <div class="auth-card-head auth-card-head--modal">
+                        <h2 class="auth-card-title">Xác thực OTP</h2>
+                    </div>
+
+                    <div class="auth-highlight-card">
+                        <div>
+                            <span class="auth-highlight-card__label">Email</span>
+                            <strong id="verifyEmailText">Chưa có email nào được chọn</strong>
+                        </div>
+                        <div class="auth-highlight-card__meta">
+                            <span id="verifyExpiryText">OTP có hiệu lực trong thời gian ngắn</span>
+                        </div>
+                    </div>
+
+                    <form id="verifyOtpForm" class="auth-form" novalidate>
+                        <input id="verifyEmail" type="hidden" />
+
+                        <div class="auth-field">
+                            <label for="authVerifyOtp">Mã OTP</label>
+                            <div class="auth-input-shell">
+                                <span class="auth-input-icon"><i class="bi bi-123"></i></span>
+                                <input id="authVerifyOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Nhập mã OTP" />
+                            </div>
+                        </div>
+
+                        <div class="auth-actions">
+                            <button class="auth-button auth-button--primary" type="submit">
+                                <i class="bi bi-patch-check"></i>
+                                <span>Xác thực</span>
+                            </button>
+                            <button id="resendOtpButton" class="auth-button auth-button--ghost" type="button">Gửi lại OTP</button>
+                        </div>
+
+                        <p id="verifyMessage" class="auth-status" hidden aria-live="polite"></p>
+                    </form>
+                </section>
+
+                <section class="auth-stage-panel" data-auth-stage="forgot">
+                    <div class="auth-card-head auth-card-head--modal">
+                        <h2 class="auth-card-title">Quên mật khẩu</h2>
+                    </div>
+
+                    <form id="forgotPasswordForm" class="auth-form" novalidate>
+                        <div class="auth-field">
+                            <label for="authForgotEmail">Email tài khoản</label>
+                            <div class="auth-input-shell">
+                                <span class="auth-input-icon"><i class="bi bi-envelope-open"></i></span>
+                                <input id="authForgotEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+                            </div>
+                        </div>
+
+                        <div class="auth-actions">
+                            <button class="auth-button auth-button--primary" type="submit">
+                                <i class="bi bi-send-check"></i>
+                                <span>Gửi mã khôi phục</span>
+                            </button>
+                        </div>
+
+                        <p id="forgotMessage" class="auth-status" hidden aria-live="polite"></p>
+                    </form>
+
+                    <div id="resetPasswordBlock" class="auth-reset-block" hidden>
+                        <div class="auth-highlight-card auth-highlight-card--subtle">
+                            <div>
+                                <span class="auth-highlight-card__label">Email đặt lại mật khẩu</span>
+                                <strong id="resetEmailText">Chưa có email nào được chọn</strong>
+                            </div>
+                            <div class="auth-highlight-card__meta">
+                                <span id="resetExpiryText">OTP reset đang chờ xác nhận</span>
+                            </div>
+                        </div>
+
+                        <form id="resetPasswordForm" class="auth-form" novalidate>
+                            <input id="resetEmail" type="hidden" />
+
+                            <div class="auth-field">
+                                <label for="authResetOtp">Mã OTP reset</label>
+                                <div class="auth-input-shell">
+                                    <span class="auth-input-icon"><i class="bi bi-shield-check"></i></span>
+                                    <input id="authResetOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Nhập mã OTP reset" />
+                                </div>
+                            </div>
+
+                            <div class="auth-form-grid">
+                                <div class="auth-field">
+                                    <label for="authResetPassword">Mật khẩu mới</label>
+                                    <div class="auth-input-shell auth-input-shell--password">
+                                        <span class="auth-input-icon"><i class="bi bi-lock"></i></span>
+                                        <input id="authResetPassword" type="password" autocomplete="new-password" placeholder="Tạo mật khẩu mới" />
+                                        <button class="auth-password-toggle" type="button" data-password-toggle="authResetPassword" aria-label="Hiện mật khẩu mới">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="auth-field">
+                                    <label for="authResetConfirm">Nhập lại mật khẩu</label>
+                                    <div class="auth-input-shell auth-input-shell--password">
+                                        <span class="auth-input-icon"><i class="bi bi-check2-square"></i></span>
+                                        <input id="authResetConfirm" type="password" autocomplete="new-password" placeholder="Xác nhận mật khẩu" />
+                                        <button class="auth-password-toggle" type="button" data-password-toggle="authResetConfirm" aria-label="Hiện xác nhận mật khẩu">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="auth-actions">
+                                <button class="auth-button auth-button--primary" type="submit">
+                                    <i class="bi bi-arrow-repeat"></i>
+                                    <span>Đặt lại mật khẩu</span>
+                                </button>
+                                <button id="resendResetOtpButton" class="auth-button auth-button--ghost" type="button">Gửi lại OTP</button>
+                            </div>
+
+                            <p id="resetMessage" class="auth-status" hidden aria-live="polite"></p>
+                        </form>
+                    </div>
+                </section>
+            </div>
+        </section>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

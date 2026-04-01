@@ -1,16 +1,23 @@
+const searchParams = new URLSearchParams(window.location.search);
+
 const authState = {
-  stage: "login",
+  overlayStage: null,
   verifyEmail: "",
   resetEmail: "",
-  redirectUrl:
-    new URLSearchParams(window.location.search).get("returnUrl") ||
-    document.body.dataset.authRedirect ||
-    "/",
+  redirectUrl: searchParams.get("returnUrl") || document.body.dataset.authRedirect || "/",
 };
 
-const stageButtons = Array.from(document.querySelectorAll("[data-auth-target]"));
-const stagePanels = Array.from(document.querySelectorAll("[data-auth-stage]"));
+const overlay = document.getElementById("authFlowOverlay");
+const overlayStages = Array.from(document.querySelectorAll("[data-auth-stage]"));
+const openButtons = Array.from(document.querySelectorAll("[data-auth-open]"));
+const closeButtons = Array.from(document.querySelectorAll("[data-auth-close]"));
+const focusButtons = Array.from(document.querySelectorAll("[data-auth-focus]"));
+const viewButtons = Array.from(document.querySelectorAll("[data-auth-view]"));
 const globalBadge = document.getElementById("authGlobalBadge");
+const mobileLayout = window.matchMedia("(max-width: 991.98px)");
+
+const loginCard = document.getElementById("authLoginCard");
+const registerCard = document.getElementById("authRegisterCard");
 
 const loginForm = document.getElementById("loginForm");
 const registerForm = document.getElementById("registerForm");
@@ -43,35 +50,11 @@ function setBadge(label) {
   }
 }
 
-function hasStage(stage) {
-  return stagePanels.some((panel) => panel.dataset.authStage === stage);
-}
-
-function openStage(stage) {
-  const nextStage = hasStage(stage)
-    ? stage
-    : hasStage(authState.stage)
-      ? authState.stage
-      : "login";
-
-  authState.stage = nextStage;
-
-  stageButtons.forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.authTarget === nextStage);
-  });
-
-  stagePanels.forEach((panel) => {
-    panel.classList.toggle("is-active", panel.dataset.authStage === nextStage);
-  });
-
-  const labels = {
-    login: "Sẵn sàng đăng nhập",
-    register: "Tạo tài khoản mới",
-    verify: "Đang chờ OTP",
-    forgot: "Khôi phục mật khẩu",
-  };
-
-  setBadge(labels[nextStage] || "Sẵn sàng");
+function clearMessage(element) {
+  if (!element) return;
+  element.hidden = true;
+  element.textContent = "";
+  element.classList.remove("is-success", "is-error");
 }
 
 function setMessage(element, message, isSuccess) {
@@ -82,17 +65,90 @@ function setMessage(element, message, isSuccess) {
   element.classList.add(isSuccess ? "is-success" : "is-error");
 }
 
-function clearMessage(element) {
-  if (!element) return;
-  element.hidden = true;
-  element.textContent = "";
-  element.classList.remove("is-success", "is-error");
-}
-
 function clearAllMessages() {
   [loginMessage, registerMessage, verifyMessage, forgotMessage, resetMessage].forEach(
     clearMessage
   );
+}
+
+function focusFirstField(container) {
+  const field = container?.querySelector("input:not([type='hidden']), button");
+  if (!field) return;
+
+  window.requestAnimationFrame(() => {
+    field.focus({ preventScroll: true });
+  });
+}
+
+function setCardView(target) {
+  const activeTarget = target === "register" ? "register" : "login";
+
+  if (loginCard) {
+    loginCard.classList.toggle("is-active", activeTarget === "login");
+  }
+
+  if (registerCard) {
+    registerCard.classList.toggle("is-active", activeTarget === "register");
+  }
+
+  viewButtons.forEach((button) => {
+    const isActive = button.dataset.authView === activeTarget;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+}
+
+function focusCard(target, { shouldScroll = true, shouldFocus = true } = {}) {
+  setCardView(target);
+
+  const card = target === "register" ? registerCard : loginCard;
+  if (!card) return;
+
+  if (shouldScroll) {
+    card.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  if (shouldFocus) {
+    focusFirstField(card);
+  }
+}
+
+function openOverlay(stage) {
+  authState.overlayStage = stage;
+  clearAllMessages();
+
+  overlayStages.forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.authStage === stage);
+  });
+
+  if (overlay) {
+    overlay.hidden = false;
+  }
+
+  document.body.classList.add("auth-flow-open");
+
+  const labels = {
+    verify: "Đang chờ OTP",
+    forgot: "Khôi phục mật khẩu",
+  };
+
+  setBadge(labels[stage] || "Sẵn sàng");
+  focusFirstField(overlayStages.find((panel) => panel.dataset.authStage === stage));
+}
+
+function closeOverlay() {
+  authState.overlayStage = null;
+
+  overlayStages.forEach((panel) => {
+    panel.classList.remove("is-active");
+  });
+
+  if (overlay) {
+    overlay.hidden = true;
+  }
+
+  document.body.classList.remove("auth-flow-open");
+  setBadge("Sẵn sàng");
 }
 
 async function parseJson(response) {
@@ -135,24 +191,12 @@ function describeExpiry(expiresAtUtc) {
   return `Hết hạn sau khoảng ${minutes} phút`;
 }
 
-function showLoginOnlyFallback(message, badgeLabel) {
-  if (badgeLabel) {
-    setBadge(badgeLabel);
-  }
-
-  openStage("login");
-  setMessage(loginMessage, message, false);
-}
-
 function handleChallenge(challenge) {
   if (!challenge) return;
 
   if (challenge.purpose === "password_reset") {
-    if (!(resetEmailInput && resetEmailText && resetExpiryText && resetPasswordBlock && hasStage("forgot"))) {
-      showLoginOnlyFallback(
-        challenge.message || "Tài khoản này cần OTP khôi phục mật khẩu để tiếp tục.",
-        "Cần khôi phục mật khẩu"
-      );
+    if (!(resetEmailInput && resetEmailText && resetExpiryText && resetPasswordBlock)) {
+      setMessage(loginMessage, challenge.message || "Cần OTP khôi phục mật khẩu để tiếp tục.", false);
       return;
     }
 
@@ -163,7 +207,7 @@ function handleChallenge(challenge) {
       ? describeExpiry(challenge.expiresAtUtc)
       : challenge.message || "OTP reset đã được tạo nhưng chưa gửi được email.";
     resetPasswordBlock.hidden = false;
-    openStage("forgot");
+    openOverlay("forgot");
     setMessage(
       forgotMessage,
       challenge.message || "Mã OTP khôi phục đã được tạo.",
@@ -172,11 +216,8 @@ function handleChallenge(challenge) {
     return;
   }
 
-  if (!(verifyEmailInput && verifyEmailText && verifyExpiryText && hasStage("verify"))) {
-    showLoginOnlyFallback(
-      challenge.message || "Tài khoản chưa xác thực email và cần OTP để tiếp tục.",
-      "Cần xác thực email"
-    );
+  if (!(verifyEmailInput && verifyEmailText && verifyExpiryText)) {
+    setMessage(loginMessage, challenge.message || "Tài khoản cần xác thực email để tiếp tục.", false);
     return;
   }
 
@@ -186,7 +227,7 @@ function handleChallenge(challenge) {
   verifyExpiryText.textContent = challenge.emailDispatched
     ? describeExpiry(challenge.expiresAtUtc)
     : challenge.message || "OTP đã được tạo nhưng chưa gửi được email.";
-  openStage("verify");
+  openOverlay("verify");
   setMessage(
     verifyMessage,
     challenge.message || "Mã OTP xác thực đã được tạo.",
@@ -212,10 +253,33 @@ function setPasswordToggleState(button, input) {
   }
 }
 
-stageButtons.forEach((button) => {
+openButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    openStage(button.dataset.authTarget || "login");
+    const stage = button.dataset.authOpen;
+    if (stage) {
+      openOverlay(stage);
+    }
   });
+});
+
+closeButtons.forEach((button) => {
+  button.addEventListener("click", closeOverlay);
+});
+
+focusButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    const target = button.dataset.authFocus;
+    if (target) {
+      closeOverlay();
+      focusCard(target, { shouldScroll: !mobileLayout.matches });
+    }
+  });
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && authState.overlayStage) {
+    closeOverlay();
+  }
 });
 
 passwordToggles.forEach((button) => {
@@ -277,7 +341,6 @@ registerForm?.addEventListener("submit", async (event) => {
   clearAllMessages();
 
   const displayName = document.getElementById("authRegisterDisplayName")?.value.trim() || "";
-  const phone = document.getElementById("authRegisterPhone")?.value.trim() || "";
   const email = document.getElementById("authRegisterEmail")?.value.trim();
   const password = document.getElementById("authRegisterPassword")?.value || "";
   const confirmPassword = document.getElementById("authRegisterConfirm")?.value || "";
@@ -302,12 +365,12 @@ registerForm?.addEventListener("submit", async (event) => {
     return;
   }
 
-  setMessage(registerMessage, "Đang tạo tài khoản và phát OTP...", true);
+  setMessage(registerMessage, "Đang tạo tài khoản...", true);
 
   try {
     const { response, data } = await postJson("/api/auth/register", {
       displayName,
-      phone: phone || null,
+      phone: null,
       email,
       password,
     });
@@ -458,17 +521,17 @@ resendResetOtpButton?.addEventListener("click", async () => {
 
   const email = resetEmailInput?.value.trim() || "";
   if (!email) {
-    setMessage(resetMessage, "Chưa có email nào để gửi lại OTP reset.", false);
+    setMessage(resetMessage, "Chưa có email nào để gửi lại OTP.", false);
     return;
   }
 
-  setMessage(resetMessage, "Đang gửi lại OTP reset...", true);
+  setMessage(resetMessage, "Đang gửi lại OTP...", true);
 
   try {
     const { response, data } = await postJson("/api/auth/forgot-password", { email });
 
     if (!response.ok) {
-      setMessage(resetMessage, normalizeError(data, "Không thể gửi lại OTP reset."), false);
+      setMessage(resetMessage, normalizeError(data, "Không thể gửi lại OTP."), false);
       return;
     }
 
@@ -483,4 +546,11 @@ resendResetOtpButton?.addEventListener("click", async () => {
   }
 });
 
-openStage("login");
+setBadge("Sẵn sàng");
+setCardView("login");
+
+if (searchParams.get("mode") === "forgot") {
+  openOverlay("forgot");
+} else if (searchParams.get("mode") === "register") {
+  focusCard("register", { shouldScroll: false, shouldFocus: false });
+}
