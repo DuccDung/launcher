@@ -53,6 +53,9 @@ public partial class User
     [InverseProperty(nameof(Review.User))]
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
+    [InverseProperty(nameof(UserOtp.User))]
+    public virtual ICollection<UserOtp> UserOtps { get; set; } = new List<UserOtp>();
+
     [InverseProperty(nameof(UserRole.User))]
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 }

@@ -94,6 +94,12 @@ public partial class LauncherDbContext
             entity.Property(e => e.IsPurchased).HasDefaultValue(false);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");
+
+            entity.HasOne(d => d.Version)
+                .WithMany(p => p.Accounts)
+                .HasForeignKey(d => d.VersionId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .HasConstraintName("FK_accounts_game_versions");
         });
 
         modelBuilder.Entity<GameVersion>(entity =>
@@ -109,12 +115,6 @@ public partial class LauncherDbContext
                 .HasForeignKey(d => d.GameId)
                 .OnDelete(DeleteBehavior.NoAction)
                 .HasConstraintName("FK_game_versions_games");
-
-            entity.HasOne(d => d.Account)
-                .WithMany(p => p.GameVersions)
-                .HasForeignKey(d => d.AccountId)
-                .OnDelete(DeleteBehavior.NoAction)
-                .HasConstraintName("FK_game_versions_accounts");
         });
 
         modelBuilder.Entity<GameFile>(entity =>

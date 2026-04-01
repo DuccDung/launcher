@@ -6,7 +6,6 @@ namespace app_server.Models;
 
 [Table("game_versions")]
 [Index(nameof(GameId), Name = "IX_game_versions_game_id")]
-[Index(nameof(AccountId), Name = "IX_game_versions_account_id")]
 public partial class GameVersion
 {
     [Key]
@@ -15,9 +14,6 @@ public partial class GameVersion
 
     [Column("game_id")]
     public Guid GameId { get; set; }
-
-    [Column("account_id")]
-    public Guid? AccountId { get; set; }
 
     [Column("version_name")]
     [StringLength(255)]
@@ -32,11 +28,10 @@ public partial class GameVersion
     [Column("is_removed")]
     public bool IsRemoved { get; set; }
 
-    [ForeignKey(nameof(AccountId))]
-    [InverseProperty(nameof(Account.GameVersions))]
-    public virtual Account? Account { get; set; }
-
     [ForeignKey(nameof(GameId))]
     [InverseProperty(nameof(Game.GameVersions))]
     public virtual Game Game { get; set; } = null!;
+
+    [InverseProperty(nameof(Account.Version))]
+    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 }

@@ -30,6 +30,31 @@ public static class DatabaseInitializer
 
                 CREATE INDEX IX_refresh_tokens_user_id ON dbo.refresh_tokens(user_id);
             END
+
+            IF OBJECT_ID('dbo.user_otps', 'U') IS NULL
+            BEGIN
+                CREATE TABLE dbo.user_otps (
+                    user_otp_id uniqueidentifier NOT NULL
+                        CONSTRAINT DF_user_otps_user_otp_id DEFAULT NEWSEQUENTIALID(),
+                    user_id uniqueidentifier NOT NULL,
+                    email varchar(255) NOT NULL,
+                    purpose varchar(50) NOT NULL,
+                    otp_code varchar(12) NOT NULL,
+                    expires_at datetime2 NOT NULL,
+                    is_used bit NOT NULL
+                        CONSTRAINT DF_user_otps_is_used DEFAULT ((0)),
+                    created_at datetime2 NOT NULL
+                        CONSTRAINT DF_user_otps_created_at DEFAULT SYSUTCDATETIME(),
+                    used_at datetime2 NULL,
+                    CONSTRAINT PK_user_otps PRIMARY KEY (user_otp_id),
+                    CONSTRAINT FK_user_otps_users
+                        FOREIGN KEY (user_id) REFERENCES dbo.users(user_id)
+                        ON DELETE CASCADE
+                );
+
+                CREATE INDEX IX_user_otps_user_id ON dbo.user_otps(user_id);
+                CREATE INDEX IX_user_otps_email_purpose ON dbo.user_otps(email, purpose);
+            END
             """;
 
         await dbContext.Database.ExecuteSqlRawAsync(sql);

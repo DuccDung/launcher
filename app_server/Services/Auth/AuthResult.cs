@@ -8,7 +8,11 @@ public class AuthResult
 
     public string? Error { get; set; }
 
+    public string? ErrorCode { get; set; }
+
     public AuthResponse? Response { get; set; }
+
+    public OtpChallengeResponse? Challenge { get; set; }
 
     public TokenResult? Tokens { get; set; }
 }

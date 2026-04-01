@@ -20,11 +20,17 @@ public class AuthController(AuthService authService) : ControllerBase
         var result = await authService.RegisterAsync(request, cancellationToken);
         if (!result.Success)
         {
-            return BadRequest(new { message = result.Error });
+            return CreateErrorResult(result);
         }
 
-        AuthCookies.AppendAuthCookies(Response, result.Tokens!);
-        return Ok(result.Response);
+        if (result.Tokens is not null)
+        {
+            AuthCookies.AppendAuthCookies(Response, result.Tokens);
+        }
+
+        return result.Challenge is not null
+            ? Ok(result.Challenge)
+            : Ok(result.Response);
     }
 
     [HttpPost("login")]
@@ -38,7 +44,83 @@ public class AuthController(AuthService authService) : ControllerBase
         var result = await authService.LoginAsync(request, cancellationToken);
         if (!result.Success)
         {
-            return Unauthorized(new { message = result.Error });
+            return CreateErrorResult(result);
+        }
+
+        if (result.Tokens is not null)
+        {
+            AuthCookies.AppendAuthCookies(Response, result.Tokens);
+        }
+
+        return result.Challenge is not null
+            ? Ok(result.Challenge)
+            : Ok(result.Response);
+    }
+
+    [HttpPost("verify-email-otp")]
+    public async Task<IActionResult> VerifyEmailOtp([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.VerifyEmailOtpAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        AuthCookies.AppendAuthCookies(Response, result.Tokens!);
+        return Ok(result.Response);
+    }
+
+    [HttpPost("resend-email-otp")]
+    public async Task<IActionResult> ResendEmailOtp([FromBody] ResendOtpRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ResendEmailVerificationOtpAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        return Ok(result.Challenge);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ForgotPasswordAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        return Ok(result.Challenge);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ResetPasswordAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
         }
 
         AuthCookies.AppendAuthCookies(Response, result.Tokens!);
@@ -64,5 +146,24 @@ public class AuthController(AuthService authService) : ControllerBase
 
         AuthCookies.AppendAuthCookies(Response, result.Tokens!);
         return Ok(result.Response);
+    }
+
+    private IActionResult CreateErrorResult(AuthResult result)
+    {
+        var payload = new
+        {
+            code = result.ErrorCode,
+            message = result.Error
+        };
+
+        return result.ErrorCode switch
+        {
+            AuthErrorCodes.UserNotFound => NotFound(payload),
+            AuthErrorCodes.InvalidCredentials => Unauthorized(payload),
+            AuthErrorCodes.EmailAlreadyExists => Conflict(payload),
+            AuthErrorCodes.AccountBlocked => StatusCode(StatusCodes.Status403Forbidden, payload),
+            AuthErrorCodes.EmailVerificationRequired => StatusCode(StatusCodes.Status403Forbidden, payload),
+            _ => BadRequest(payload)
+        };
     }
 }

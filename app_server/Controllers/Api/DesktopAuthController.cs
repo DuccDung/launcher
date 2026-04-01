@@ -19,10 +19,12 @@ public class DesktopAuthController(AuthService authService) : ControllerBase
         var result = await authService.RegisterAsync(request, cancellationToken);
         if (!result.Success)
         {
-            return BadRequest(new { message = result.Error });
+            return CreateErrorResult(result);
         }
 
-        return Ok(CreateClientAuthResponse(result));
+        return result.Challenge is not null
+            ? Ok(result.Challenge)
+            : Ok(CreateClientAuthResponse(result));
     }
 
     [HttpPost("login")]
@@ -36,7 +38,77 @@ public class DesktopAuthController(AuthService authService) : ControllerBase
         var result = await authService.LoginAsync(request, cancellationToken);
         if (!result.Success)
         {
-            return Unauthorized(new { message = result.Error });
+            return CreateErrorResult(result);
+        }
+
+        return result.Challenge is not null
+            ? Ok(result.Challenge)
+            : Ok(CreateClientAuthResponse(result));
+    }
+
+    [HttpPost("verify-email-otp")]
+    public async Task<IActionResult> VerifyEmailOtp([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.VerifyEmailOtpAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        return Ok(CreateClientAuthResponse(result));
+    }
+
+    [HttpPost("resend-email-otp")]
+    public async Task<IActionResult> ResendEmailOtp([FromBody] ResendOtpRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ResendEmailVerificationOtpAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        return Ok(result.Challenge);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ForgotPasswordAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
+        }
+
+        return Ok(result.Challenge);
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return ValidationProblem(ModelState);
+        }
+
+        var result = await authService.ResetPasswordAsync(request, cancellationToken);
+        if (!result.Success)
+        {
+            return CreateErrorResult(result);
         }
 
         return Ok(CreateClientAuthResponse(result));
@@ -65,12 +137,33 @@ public class DesktopAuthController(AuthService authService) : ControllerBase
         {
             UserId = result.Response!.UserId,
             Email = result.Response.Email,
+            DisplayName = result.Response.DisplayName,
             Status = result.Response.Status,
+            EmailVerified = result.Response.EmailVerified,
             Roles = result.Response.Roles,
             AccessToken = result.Tokens!.AccessToken,
             AccessTokenExpiresAt = result.Tokens.AccessTokenExpiresAt,
             RefreshToken = result.Tokens.RefreshToken,
             RefreshTokenExpiresAt = result.Tokens.RefreshTokenExpiresAt
+        };
+    }
+
+    private IActionResult CreateErrorResult(AuthResult result)
+    {
+        var payload = new
+        {
+            code = result.ErrorCode,
+            message = result.Error
+        };
+
+        return result.ErrorCode switch
+        {
+            AuthErrorCodes.UserNotFound => NotFound(payload),
+            AuthErrorCodes.InvalidCredentials => Unauthorized(payload),
+            AuthErrorCodes.EmailAlreadyExists => Conflict(payload),
+            AuthErrorCodes.AccountBlocked => StatusCode(StatusCodes.Status403Forbidden, payload),
+            AuthErrorCodes.EmailVerificationRequired => StatusCode(StatusCodes.Status403Forbidden, payload),
+            _ => BadRequest(payload)
         };
     }
 }

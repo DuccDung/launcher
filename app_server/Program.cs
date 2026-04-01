@@ -17,6 +17,9 @@ builder.Services.AddDbContext<LauncherDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("sql_server")));
 
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.Configure<OtpOptions>(builder.Configuration.GetSection(OtpOptions.SectionName));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionName));
 var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
 var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SecretKey));
 
@@ -54,6 +57,10 @@ builder.Services
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
 builder.Services.AddScoped<ITokenService, JwtTokenService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<IOtpGenerator, OtpGenerator>();
+builder.Services.AddScoped<IUserOtpService, UserOtpService>();
+builder.Services.AddScoped<IAuthEmailService, AuthEmailService>();
 builder.Services.AddScoped<AuthService>();
 var app = builder.Build();
 

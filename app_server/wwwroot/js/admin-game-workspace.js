@@ -48,7 +48,7 @@
     gameNewPrice: q("game-new-price"),
     gameSlug: q("game-slug-preview"),
     versionName: q("version-name"),
-    versionAccount: q("version-account-id"),
+    versionAccount: q("version-account-summary"),
     versionRemoved: q("version-is-removed"),
     accountVersion: q("account-version-id"),
     accountActive: q("account-is-active"),
@@ -286,11 +286,17 @@
   }
 
   function linkedIds() {
-    return [...new Set((s.detail?.versions ?? []).map((item) => item.accountId).filter(Boolean))];
+    const versionIds = new Set(versions().map((item) => item.versionId));
+    return [...new Set(
+      accs()
+        .filter((item) => item.versionId && versionIds.has(item.versionId))
+        .map((item) => item.accountId)
+    )];
   }
 
   function linkedAccs() {
-    return accs().filter((item) => linkedIds().includes(item.accountId));
+    const versionIds = new Set(versions().map((item) => item.versionId));
+    return accs().filter((item) => item.versionId && versionIds.has(item.versionId));
   }
 
   function versions() {
@@ -298,11 +304,14 @@
   }
 
   function linkedVersionForAccount(accountId = s.accountId) {
-    return versions().find((item) => item.accountId === accountId) ?? null;
+    const account = accs().find((item) => item.accountId === accountId);
+    return account?.versionId
+      ? versions().find((item) => item.versionId === account.versionId) ?? null
+      : null;
   }
 
   function creatableVersions() {
-    return versions().filter((item) => !item.accountId);
+    return versions();
   }
 
   function curBlock() {
@@ -820,68 +829,40 @@
   }
 
   function renderVersionPanel() {
-    const ids = new Set(linkedIds());
     const current = s.detail?.versions.find((item) => item.versionId === s.versionId);
     r.versionName.value = current?.versionName || "";
-    r.versionAccount.innerHTML = [
-      '<option value="">Chưa gắn account</option>',
-      ...accs()
-        .sort(
-          (left, right) =>
-            Number(ids.has(right.accountId)) -
-              Number(ids.has(left.accountId)) ||
-            new Date(right.updatedAt) - new Date(left.updatedAt)
-        )
-        .map(
-          (item) =>
-            `<option value="${e(item.accountId)}">${e(
-              `${short(item.accountId)} · ${item.isActive ? "Active" : "Inactive"} · ${
-                item.isPurchased ? "Purchased" : "Open"
-              }`
-            )}</option>`
-        )
-    ].join("");
-
-    r.versionAccount.value = current?.accountId || "";
+    r.versionAccount.value = current
+      ? `${current.linkedAccountCount ?? 0} account đang gắn với version này`
+      : "Gắn account ở panel Kho account";
     r.versionRemoved.value = String(current?.isRemoved || false);
     r.versionCount.textContent = `${s.detail?.versions.length || 0} record`;
 
     r.versionList.innerHTML = !s.gameId
       ? empty("Chưa chọn game", "Chọn một game trong danh sách để mở version tương ứng.")
       : !(s.detail?.versions.length)
-        ? empty("Game này chưa có version", "Tạo version trước để gắn account.")
+        ? empty("Game này chưa có version", "Tạo version trước để gắn nhiều account.")
         : s.detail.versions
             .map((item) => {
-              const account = accs().find((entry) => entry.accountId === item.accountId);
-              const detailLines = [
-                trim(item.versionName) ? `Tên: ${item.versionName}` : "Chưa đặt tên riêng",
-                account
-                  ? `${account.isActive ? "Active" : "Inactive"} · ${
-                      account.isPurchased ? "Purchased" : "Open"
-                    }`
-                  : "Version này đang để trống account."
-              ];
+              const linkedCount = item.linkedAccountCount ?? accs().filter((entry) => entry.versionId === item.versionId).length;
               return `
                 <article class="admin-mini-card admin-crud-record admin-workspace-record ${item.versionId === s.versionId ? "is-selected" : ""}">
                   <div class="admin-record-footer">
                     <strong>${e(versionName(item))}</strong>
                     <small>${e(dt(item.updatedAt))}</small>
                   </div>
-                  <div class="admin-crud-record__slug">${e(detailLines[0])} · #${e(short(item.versionId))}</div>
+                  <div class="admin-crud-record__slug">${e(
+                    trim(item.versionName) ? `Tên: ${item.versionName}` : "Chưa đặt tên riêng"
+                  )} · #${e(short(item.versionId))}</div>
                   <div class="admin-chip-row admin-crud-meta">
                     <span class="admin-soft-chip ${item.isRemoved ? "" : "is-active"}">${e(
                       item.isRemoved ? "Removed" : "Live"
                     )}</span>
-                    <span class="admin-soft-chip">${e(
-                      account ? `Account ${short(account.accountId)}` : "Chưa gắn account"
-                    )}</span>
+                    <span class="admin-soft-chip">${e(`${linkedCount} account`)}</span>
                   </div>
                   <p class="admin-workspace-record__description">${e(
-                    account
-                      ? `${account.isActive ? "Active" : "Inactive"} · ${
-                          account.isPurchased ? "Purchased" : "Open"
-                        }`
-                      : "Version này đang để trống account."
+                    linkedCount
+                      ? `Version này đang có ${linkedCount} account trong kho account.`
+                      : "Version này chưa có account nào."
                   )}</p>
                   <div class="admin-toolbar-actions admin-crud-item-actions">
                     <button class="admin-button admin-button--secondary" type="button" data-version="${e(item.versionId)}">Sửa</button>
@@ -897,9 +878,7 @@
     const current = accs().find((item) => item.accountId === s.accountId);
     const ids = new Set(linkedIds());
     const currentLinkedVersion = linkedVersionForAccount();
-    const availableVersions = current
-      ? versions().filter((item) => !item.accountId || item.accountId === current.accountId)
-      : creatableVersions();
+    const availableVersions = versions();
     const list = [...accs()].sort(
       (left, right) =>
         Number(ids.has(right.accountId)) -
@@ -911,54 +890,58 @@
       ? '<option value="">Chọn game trước</option>'
       : !versions().length
         ? '<option value="">Tạo version trước</option>'
-        : !availableVersions.length
-          ? '<option value="">Không còn version trống</option>'
-          : availableVersions
-              .map(
-                (item) =>
-                  `<option value="${e(item.versionId)}">${e(
-                    `${versionName(item)} · ${item.isRemoved ? "Removed" : "Live"}`
-                  )}</option>`
-              )
-              .join("");
+        : [
+            '<option value="">Không gắn version</option>',
+            ...availableVersions.map(
+              (item) =>
+                `<option value="${e(item.versionId)}">${e(
+                  `${versionName(item)} · ${item.isRemoved ? "Removed" : "Live"}`
+                )}</option>`
+            )
+          ].join("");
 
-    r.accountVersion.value = currentLinkedVersion?.versionId || availableVersions[0]?.versionId || "";
+    r.accountVersion.value = current?.versionId || currentLinkedVersion?.versionId || "";
     r.accountActive.value = String(current?.isActive ?? true);
     r.accountCount.textContent = `${list.length} record`;
 
     r.accountList.innerHTML = list.length
       ? list
-          .map(
-            (item) => `
+          .map((item) => {
+            const linkedVersion = item.versionId
+              ? versions().find((entry) => entry.versionId === item.versionId) ?? null
+              : null;
+            return `
               <article class="admin-mini-card admin-crud-record admin-workspace-record ${item.accountId === s.accountId ? "is-selected" : ""} ${ids.has(item.accountId) ? "is-linked" : ""}">
                 <div class="admin-record-footer">
                   <strong>Account ${e(short(item.accountId))}</strong>
                   <small>${e(dt(item.updatedAt))}</small>
                 </div>
-                  <div class="admin-chip-row admin-crud-meta">
-                    <span class="admin-soft-chip ${item.isActive ? "is-active" : ""}">${e(
-                      item.isActive ? "Active" : "Inactive"
-                    )}</span>
-                    <span class="admin-soft-chip ${purchaseChipClass(item.isPurchased)}">${e(
-                      purchaseLabel(item.isPurchased)
-                    )}</span>
-                    <span class="admin-soft-chip">${e(`${item.linkedVersionCount} version`)}</span>
-                    <span class="admin-soft-chip">${e(`${item.gameFileCount} file`)}</span>
-                  </div>
+                <div class="admin-chip-row admin-crud-meta">
+                  <span class="admin-soft-chip ${item.isActive ? "is-active" : ""}">${e(
+                    item.isActive ? "Active" : "Inactive"
+                  )}</span>
+                  <span class="admin-soft-chip ${purchaseChipClass(item.isPurchased)}">${e(
+                    purchaseLabel(item.isPurchased)
+                  )}</span>
+                  <span class="admin-soft-chip">${e(linkedVersion ? versionName(linkedVersion) : "No version")}</span>
+                  <span class="admin-soft-chip">${e(`${item.gameFileCount} file`)}</span>
+                </div>
                 <p class="admin-workspace-record__description">${e(
-                  ids.has(item.accountId)
-                    ? "Account này đang gắn với game đang mở."
-                    : "Account toàn cục, có thể tái sử dụng cho game khác."
+                  linkedVersion
+                    ? ids.has(item.accountId)
+                      ? `Account này đang gắn với ${versionName(linkedVersion)} của game đang mở.`
+                      : `Account đang gắn với ${versionName(linkedVersion)} ở game khác.`
+                    : "Account đang nằm trong kho toàn cục, chưa gắn version."
                 )}</p>
                 <div class="admin-toolbar-actions admin-crud-item-actions">
                   <button class="admin-button admin-button--secondary" type="button" data-account="${e(item.accountId)}">Sửa</button>
                   <button class="admin-button admin-button--danger" type="button" data-account-del="${e(item.accountId)}">Xóa</button>
                 </div>
               </article>
-            `
-          )
+            `;
+          })
           .join("")
-      : empty("Chưa có account", "Tạo account ở panel này rồi quay lại gắn vào version.");
+      : empty("Chưa có account", "Tạo account ở panel này rồi gắn vào version mong muốn.");
   }
 
   function renderFilePanel() {
@@ -1146,7 +1129,7 @@
       ? "Hãy chọn game trước khi thao tác version."
       : currentVersion
         ? `Đang chỉnh "${versionName(currentVersion)}" của game "${curGame().name}".`
-        : `Version đang thao tác cho game "${curGame().name}".`;
+        : `Version đang thao tác cho game "${curGame().name}". Một version có thể gắn nhiều account.`;
     r.fileNote.textContent = !curGame()
       ? "Chọn game rồi gắn account vào version trước khi thao tác file package."
       : !linkedAccs().length
@@ -1169,7 +1152,7 @@
     const hasArticle = Boolean(curArticle());
     const hasBlock = Boolean(curBlock());
     const canBlockUpload = hasBlock && ["image", "video"].includes(curBlock().type);
-    const canCreateAccount = hasGame && !hasAccount && creatableVersions().length > 0;
+    const canCreateAccount = hasGame && !hasAccount && versions().length > 0;
     const off = busy();
 
     setPanel("version", !hasGame);
@@ -1220,10 +1203,11 @@
       r[key].disabled = off || !enabled;
     });
 
-    [r.versionName, r.versionAccount, r.versionRemoved].forEach((item) => {
+    [r.versionName, r.versionRemoved].forEach((item) => {
       item.disabled = off || !hasGame;
     });
-    r.accountVersion.disabled = off || hasAccount || !hasGame || !creatableVersions().length;
+    r.versionAccount.disabled = true;
+    r.accountVersion.disabled = off || !hasGame || !versions().length;
     r.accountActive.disabled = off || (!hasAccount && !canCreateAccount);
     [r.fileAccount, r.fileType, r.fileActive, ...r.fileUrls, ...r.fileBtns].forEach((item) => {
       item.disabled = off || !hasGame || !linkedAccs().length;
@@ -1331,7 +1315,6 @@
   function versionPayload() {
     return {
       versionName: trim(r.versionName.value),
-      accountId: r.versionAccount.value || null,
       isRemoved: bool(r.versionRemoved.value)
     };
   }
@@ -1339,7 +1322,7 @@
   function accountPayload() {
     const current = accs().find((item) => item.accountId === s.accountId);
     return {
-      versionId: current ? linkedVersionForAccount(current.accountId)?.versionId || null : r.accountVersion.value || null,
+      versionId: r.accountVersion.value || null,
       isActive: bool(r.accountActive.value),
       isPurchased: current?.isPurchased ?? false
     };
@@ -1500,7 +1483,7 @@
       return;
     }
 
-    if (!creatableVersions().length) {
+    if (!versions().length) {
       msg("Hãy tạo version trước rồi mới tạo account.", "error");
       return;
     }
@@ -1510,6 +1493,7 @@
       r.accountVersion.focus();
       return;
     }
+
     await runAction("Không thể tạo account.", async () => {
       const response = await req("/api/admin/game-workspace/accounts", {
         method: "POST",

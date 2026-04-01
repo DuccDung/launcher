@@ -115,9 +115,19 @@ public sealed class AdminGameWorkspaceController(
 
         var categories = await dbContext.GameCategories.Where(item => item.GameId == gameId).ToListAsync(cancellationToken);
         var versions = await dbContext.GameVersions.Where(item => item.GameId == gameId).ToListAsync(cancellationToken);
+        var versionIds = versions.Select(item => item.VersionId).ToList();
+        var linkedAccounts = await dbContext.Accounts
+            .Where(item => item.VersionId.HasValue && versionIds.Contains(item.VersionId.Value))
+            .ToListAsync(cancellationToken);
         var mediaItems = await dbContext.Media.Where(item => item.GameId == gameId).ToListAsync(cancellationToken);
         var articles = await dbContext.Articles.Where(item => item.GameId == gameId).ToListAsync(cancellationToken);
         var configs = await dbContext.GameConfigs.Where(item => item.GameId == gameId).ToListAsync(cancellationToken);
+
+        foreach (var account in linkedAccounts)
+        {
+            account.VersionId = null;
+            account.UpdatedAt = DateTime.UtcNow;
+        }
 
         dbContext.GameCategories.RemoveRange(categories);
         dbContext.GameVersions.RemoveRange(versions);
@@ -143,18 +153,11 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Không tìm thấy game để tạo version." });
         }
 
-        if (request.AccountId.HasValue &&
-            !await dbContext.Accounts.AnyAsync(item => item.AccountId == request.AccountId.Value, cancellationToken))
-        {
-            return BadRequest(new { message = "Account được chọn không tồn tại." });
-        }
-
         var timestamp = DateTime.UtcNow;
         var version = new GameVersion
         {
             GameId = gameId,
             VersionName = CleanOptionalText(request.VersionName),
-            AccountId = request.AccountId,
             IsRemoved = request.IsRemoved,
             CreatedAt = timestamp,
             UpdatedAt = timestamp
@@ -179,14 +182,7 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Không tìm thấy version để cập nhật." });
         }
 
-        if (request.AccountId.HasValue &&
-            !await dbContext.Accounts.AnyAsync(item => item.AccountId == request.AccountId.Value, cancellationToken))
-        {
-            return BadRequest(new { message = "Account được chọn không tồn tại." });
-        }
-
         version.VersionName = CleanOptionalText(request.VersionName);
-        version.AccountId = request.AccountId;
         version.IsRemoved = request.IsRemoved;
         version.UpdatedAt = DateTime.UtcNow;
 
@@ -203,9 +199,16 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Không tìm thấy version để xóa." });
         }
 
+        var linkedAccounts = await dbContext.Accounts.Where(item => item.VersionId == versionId).ToListAsync(cancellationToken);
+        foreach (var account in linkedAccounts)
+        {
+            account.VersionId = null;
+            account.UpdatedAt = DateTime.UtcNow;
+        }
+
         dbContext.GameVersions.Remove(version);
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new { message = "Đã xóa version." });
+        return Ok(new { message = "Đã xóa version và gỡ account liên quan." });
     }
 
     [HttpPost("accounts")]
@@ -222,14 +225,10 @@ public sealed class AdminGameWorkspaceController(
             return BadRequest(new { message = "Version được chọn không tồn tại." });
         }
 
-        if (version.AccountId.HasValue)
-        {
-            return Conflict(new { message = "Version này đã gắn với account khác." });
-        }
-
         var timestamp = DateTime.UtcNow;
         var account = new Account
         {
+            VersionId = version.VersionId,
             IsActive = request.IsActive,
             IsPurchased = false,
             CreatedAt = timestamp,
@@ -237,9 +236,6 @@ public sealed class AdminGameWorkspaceController(
         };
 
         dbContext.Accounts.Add(account);
-        await dbContext.SaveChangesAsync(cancellationToken);
-        version.AccountId = account.AccountId;
-        version.UpdatedAt = timestamp;
         await dbContext.SaveChangesAsync(cancellationToken);
         return Ok(new { message = "Đã tạo account mới.", accountId = account.AccountId });
     }
@@ -253,6 +249,13 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Không tìm thấy account để cập nhật." });
         }
 
+        if (request.VersionId.HasValue &&
+            !await dbContext.GameVersions.AnyAsync(item => item.VersionId == request.VersionId.Value, cancellationToken))
+        {
+            return BadRequest(new { message = "Version được chọn không tồn tại." });
+        }
+
+        account.VersionId = request.VersionId;
         account.IsActive = request.IsActive;
         account.UpdatedAt = DateTime.UtcNow;
 
@@ -269,19 +272,12 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Không tìm thấy account để xóa." });
         }
 
-        var linkedVersions = await dbContext.GameVersions.Where(item => item.AccountId == accountId).ToListAsync(cancellationToken);
-        foreach (var version in linkedVersions)
-        {
-            version.AccountId = null;
-            version.UpdatedAt = DateTime.UtcNow;
-        }
-
         var linkedFiles = await dbContext.GameFiles.Where(item => item.AccountId == accountId).ToListAsync(cancellationToken);
         dbContext.GameFiles.RemoveRange(linkedFiles);
         dbContext.Accounts.Remove(account);
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return Ok(new { message = "Đã xóa account, file liên quan và gỡ account khỏi version." });
+        return Ok(new { message = "Đã xóa account và file liên quan." });
     }
 
     [HttpPost("files")]
@@ -670,6 +666,7 @@ public sealed class AdminGameWorkspaceController(
             .Select(item => new
             {
                 item.AccountId,
+                item.VersionId,
                 item.IsActive,
                 item.IsPurchased,
                 item.UpdatedAt
@@ -678,13 +675,6 @@ public sealed class AdminGameWorkspaceController(
 
         var accountIds = accounts.Select(item => item.AccountId).ToList();
 
-        var versionCounts = await dbContext.GameVersions
-            .AsNoTracking()
-            .Where(item => item.AccountId.HasValue && accountIds.Contains(item.AccountId.Value))
-            .GroupBy(item => item.AccountId!.Value)
-            .Select(group => new { AccountId = group.Key, Count = group.Count() })
-            .ToListAsync(cancellationToken);
-
         var fileCounts = await dbContext.GameFiles
             .AsNoTracking()
             .Where(item => accountIds.Contains(item.AccountId))
@@ -692,15 +682,14 @@ public sealed class AdminGameWorkspaceController(
             .Select(group => new { AccountId = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
-        var versionCountMap = versionCounts.ToDictionary(item => item.AccountId, item => item.Count);
         var fileCountMap = fileCounts.ToDictionary(item => item.AccountId, item => item.Count);
 
         return accounts
             .Select(item => new AdminWorkspaceAccountResponse(
                 item.AccountId,
+                item.VersionId,
                 item.IsActive,
                 item.IsPurchased,
-                versionCountMap.GetValueOrDefault(item.AccountId, 0),
                 fileCountMap.GetValueOrDefault(item.AccountId, 0),
                 item.UpdatedAt))
             .ToList();
@@ -738,19 +727,43 @@ public sealed class AdminGameWorkspaceController(
             .AsNoTracking()
             .Where(item => item.GameId == gameId)
             .OrderByDescending(item => item.UpdatedAt)
+            .Select(item => new
+            {
+                item.VersionId,
+                item.GameId,
+                item.VersionName,
+                item.IsRemoved,
+                item.UpdatedAt
+            })
+            .ToListAsync(cancellationToken);
+
+        var versionIds = versions
+            .Select(item => item.VersionId)
+            .ToList();
+
+        var linkedAccounts = await dbContext.Accounts
+            .AsNoTracking()
+            .Where(item => item.VersionId.HasValue && versionIds.Contains(item.VersionId.Value))
+            .Select(item => new { item.AccountId, item.VersionId })
+            .ToListAsync(cancellationToken);
+
+        var linkedAccountIds = linkedAccounts
+            .Select(item => item.AccountId)
+            .Distinct()
+            .ToList();
+
+        var linkedAccountCountMap = linkedAccounts
+            .GroupBy(item => item.VersionId!.Value)
+            .ToDictionary(group => group.Key, group => group.Count());
+
+        var versionResponses = versions
             .Select(item => new AdminWorkspaceVersionResponse(
                 item.VersionId,
                 item.GameId,
                 item.VersionName,
-                item.AccountId,
+                linkedAccountCountMap.GetValueOrDefault(item.VersionId, 0),
                 item.IsRemoved,
                 item.UpdatedAt))
-            .ToListAsync(cancellationToken);
-
-        var linkedAccountIds = versions
-            .Where(item => item.AccountId.HasValue)
-            .Select(item => item.AccountId!.Value)
-            .Distinct()
             .ToList();
 
         var files = await dbContext.GameFiles
@@ -803,7 +816,7 @@ public sealed class AdminGameWorkspaceController(
                 game.NewPrice,
                 categoryIds,
                 game.UpdatedAt),
-            versions,
+            versionResponses,
             files,
             mediaItems,
             article);
@@ -848,7 +861,6 @@ public sealed class AdminGameWorkspaceController(
             });
         }
     }
-
     private string GetUploadDirectory(string bucket)
     {
         return Path.Combine(webHostEnvironment.ContentRootPath, "App_Data", "admin-workspace", bucket);

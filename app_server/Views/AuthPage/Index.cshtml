@@ -3,424 +3,156 @@
 }
 <!doctype html>
 <html lang="vi">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Đăng nhập | Deluxe Gaming</title>
+    <title>Tài khoản | Deluxe Gaming</title>
     <link rel="icon" type="image/png" href="~/ui/assets/img/logo.png" />
-
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="~/ui/style.css" asp-append-version="true" />
-    <style>
-      .auth-feedback[hidden] {
-        display: none !important;
-      }
-
-      .auth-feedback {
-        margin: 2px 0 0;
-        font-size: 0.8rem;
-        line-height: 1.45;
-      }
-
-      .auth-feedback.is-success {
-        color: #85c9ff;
-      }
-
-      .auth-feedback.is-error {
-        color: #ff8f8f;
-      }
-    </style>
-  </head>
-  <body>
+    <link rel="stylesheet" href="~/css/auth-page.css" asp-append-version="true" />
+</head>
+<body data-auth-redirect="/">
     <div class="ambient-glow" aria-hidden="true">
-      <span class="ambient-glow__halo"></span>
-      <span class="ambient-glow__core"></span>
+        <span class="ambient-glow__halo"></span>
+        <span class="ambient-glow__core"></span>
     </div>
 
     <div class="page-shell">
-      <header id="header" class="header-wrapper">
-        <div id="top-bar" class="header-top hide-for-sticky nav-dark">
-          <div class="topbar">
-            <div class="marquee" aria-label="Thông báo người dùng trúng thưởng">
-              <div class="marquee-track">
-                <span class="marquee-item">
-                  Chúc mừng Thanh Tùng vừa trúng
-                  <strong>Assassin's Creed Mirage</strong> khi mở Mystery Box
-                  Ultimate. Thử vận may ngay!
-                </span>
-                <span class="marquee-item">
-                  Chúc mừng Khánh Toàn vừa trúng
-                  <strong>Black Myth Wukong</strong> khi mở Mystery Box Ultimate.
-                  Thử vận may ngay!
-                </span>
-                <span class="marquee-item">
-                  Chúc mừng Minh Khang vừa trúng
-                  <strong>God of War Ragnarok</strong> khi mở Mystery Box
-                  Ultimate. Thử vận may ngay!
-                </span>
-                <span class="marquee-item">
-                  Chúc mừng Thanh Tùng vừa trúng
-                  <strong>Assassin's Creed Mirage</strong> khi mở Mystery Box
-                  Ultimate. Thử vận may ngay!
-                </span>
-                <span class="marquee-item">
-                  Chúc mừng Khánh Toàn vừa trúng
-                  <strong>Black Myth Wukong</strong> khi mở Mystery Box Ultimate.
-                  Thử vận may ngay!
-                </span>
-                <span class="marquee-item">
-                  Chúc mừng Minh Khang vừa trúng
-                  <strong>God of War Ragnarok</strong> khi mở Mystery Box
-                  Ultimate. Thử vận may ngay!
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div id="masthead" class="header-main hide-for-sticky nav-dark">
-          <div
-            class="header-inner flex-row container logo-left medium-logo-center"
-            role="navigation"
-            aria-label="Điều hướng chính"
-          >
-            <div class="flex-col show-for-medium flex-left">
-              <ul class="mobile-nav nav nav-left">
-                <li class="nav-icon has-icon">
-                  <button
-                    id="mobileMenuToggle"
-                    class="menu-toggle-btn"
-                    type="button"
-                    aria-label="Mở menu"
-                    aria-controls="mobileDrawer"
-                    aria-expanded="false"
-                  >
-                    <i class="bi bi-list"></i>
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            <div id="logo" class="flex-col logo">
-              <a
-                href="/"
-                title="Deluxe Gaming"
-                rel="home"
-                class="logo-link"
-              >
-                <img
-                  src="https://deluxegaming.vn/wp-content/uploads/2025/11/logo-deluxe-1024x202.png"
-                  alt="Deluxe Gaming"
-                  class="header_logo header-logo"
-                />
-              </a>
-            </div>
-
-            <div class="flex-col hide-for-medium flex-left flex-grow">
-              <ul class="header-nav header-nav-main nav nav-left"></ul>
-            </div>
-
-            <div class="flex-col hide-for-medium flex-right">
-              <ul class="header-nav header-nav-main nav nav-right">
-                <li class="account-item has-icon">
-                  <a
-                    href="/auth"
-                    class="nav-top-link nav-top-not-logged-in is-small"
-                    title="Đăng nhập"
-                  >
-                    <span>Đăng nhập</span>
-                  </a>
-                </li>
-
-                <li class="cart-item has-icon">
-                  <div class="header-button">
-                    <a
-                      href="#"
-                      class="header-cart-link icon primary button circle is-small"
-                      title="Giỏ hàng"
-                    >
-                      <span class="header-cart-title">Giỏ hàng</span>
-                      <i
-                        class="fa-solid fa-basket-shopping"
-                        data-icon-label="1"
-                      ></i>
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </div>
-
-            <div class="flex-col show-for-medium flex-right">
-              <ul class="mobile-nav nav nav-right">
-                <li class="cart-item has-icon">
-                  <div class="header-button">
-                    <a
-                      href="#"
-                      class="header-cart-link icon primary button circle is-small mobile-cart"
-                      title="Giỏ hàng"
-                    >
-                      <i
-                        class="fa-solid fa-basket-shopping"
-                        data-icon-label="1"
-                      ></i>
-                    </a>
-                  </div>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <div class="mobile-header-search show-on-mobile-search">
-          <div class="container mobile-header-search-inner">
-            <form class="mobile-header-search-form" action="#" method="get">
-              <div class="mobile-header-search-shell">
-                <input
-                  class="mobile-header-search-input"
-                  type="search"
-                  placeholder="Tìm kiếm..."
-                  aria-label="Tìm kiếm trên giao diện di động"
-                />
-                <button
-                  class="mobile-header-search-button"
-                  type="submit"
-                  aria-label="Tìm"
-                >
-                  <i class="bi bi-search"></i>
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-
-        <div class="header-bottom">
-          <div class="container wide-nav-inner">
-            <nav class="wide-nav-nav" aria-label="Danh mục sản phẩm">
-              <ul class="header-bottom-nav">
-                <li>
-                  <a href="/" class="nav-link-item">Trang chủ</a>
-                </li>
-                <li>
-                  <a href="#" class="nav-link-item">Giới thiệu</a>
-                </li>
-                <li class="has-dropdown">
-                  <button class="nav-link-item dropdown-toggle-btn" type="button">
-                    Thể loại
-                    <i class="bi bi-chevron-down"></i>
-                  </button>
-                  <ul class="dropdown-menu-custom">
-                    <li><a href="#">Hành động</a></li>
-                    <li><a href="#">Phiêu lưu</a></li>
-                    <li><a href="#">Chiến thuật</a></li>
-                  </ul>
-                </li>
-                <li>
-                  <a href="#" class="nav-link-item">Blog</a>
-                </li>
-                <li>
-                  <a href="#" class="nav-link-item">Yêu thích</a>
-                </li>
-                <li>
-                  <a href="#" class="nav-link-item">Vòng quay may mắn</a>
-                </li>
-                <li>
-                  <a href="#" class="nav-link-item">Liên hệ</a>
-                </li>
-              </ul>
-            </nav>
-
-            <div class="search-area">
-              <form class="searchform" action="#" method="get">
-                <div class="searchform-wrapper">
-                  <input
-                    class="search-field"
-                    type="search"
-                    placeholder="Tìm kiếm..."
-                    aria-label="Tìm kiếm sản phẩm"
-                  />
-                  <button class="search-submit" type="submit" aria-label="Tìm">
-                    <i class="bi bi-search"></i>
-                  </button>
+        <header class="header-wrapper">
+            <div class="header-top">
+                <div class="topbar">
+                    <div class="marquee" aria-label="Thông báo xác thực tài khoản">
+                        <div class="marquee-track">
+                            <span class="marquee-item">Đăng ký mới sẽ nhận OTP email để kích hoạt tài khoản.</span>
+                            <span class="marquee-item">Khôi phục mật khẩu an toàn bằng mã OTP gửi trực tiếp về email.</span>
+                            <span class="marquee-item">Đăng ký mới sẽ nhận OTP email để kích hoạt tài khoản.</span>
+                            <span class="marquee-item">Khôi phục mật khẩu an toàn bằng mã OTP gửi trực tiếp về email.</span>
+                        </div>
+                    </div>
                 </div>
-              </form>
             </div>
-          </div>
-        </div>
-      </header>
 
-      <main class="auth-page-main">
-        <section class="auth-section" aria-labelledby="authPageTitle">
-          <div class="container">
-            <div class="auth-shell">
-              <div class="auth-grid">
-                <section class="auth-card" aria-labelledby="loginTitle">
-                  <div class="auth-card-head">
-                    <h2 id="loginTitle" class="auth-card-title">Đăng nhập</h2>
-                  </div>
-
-                  <form id="loginForm" class="auth-form" action="#" method="post">
-                    <div class="auth-field">
-                      <label for="authLoginEmail">Tên tài khoản hoặc địa chỉ email *</label>
-                      <input
-                        id="authLoginEmail"
-                        type="email"
-                        name="login_email"
-                        value="duccdung999@gmail.com"
-                        autocomplete="username"
-                      />
+            <div class="header-main">
+                <div class="header-inner flex-row container logo-left medium-logo-center">
+                    <div id="logo" class="flex-col logo">
+                        <a href="/" title="Deluxe Gaming" rel="home" class="logo-link">
+                            <img src="https://deluxegaming.vn/wp-content/uploads/2025/11/logo-deluxe-1024x202.png" alt="Deluxe Gaming" class="header_logo header-logo" />
+                        </a>
                     </div>
 
-                    <div class="auth-field">
-                      <label for="authLoginPassword">Mật khẩu *</label>
-                      <input
-                        id="authLoginPassword"
-                        type="password"
-                        name="login_password"
-                        value="1234567890"
-                        autocomplete="current-password"
-                      />
+                    <div class="flex-col hide-for-medium flex-right">
+                        <ul class="header-nav header-nav-main nav nav-right">
+                            <li class="account-item has-icon">
+                                <a href="/auth" class="nav-top-link nav-top-not-logged-in is-small" title="Tài khoản">
+                                    <span>Tài khoản</span>
+                                </a>
+                            </li>
+                            <li class="cart-item has-icon">
+                                <div class="header-button">
+                                    <a href="#" class="header-cart-link icon primary button circle is-small" title="Giỏ hàng">
+                                        <span class="header-cart-title">Giỏ hàng</span>
+                                        <i class="fa-solid fa-basket-shopping" data-icon-label="1"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
                     </div>
-
-                    <label class="auth-check">
-                      <input type="checkbox" name="remember_me" />
-                      <span>Ghi nhớ mật khẩu</span>
-                    </label>
-
-                    <div class="auth-actions">
-                      <button class="auth-button auth-button--primary" type="submit">
-                        Đăng nhập
-                      </button>
-                    </div>
-
-                    <p id="loginMessage" class="auth-feedback" hidden aria-live="polite"></p>
-                    <a href="#" class="auth-link-inline">Quên mật khẩu?</a>
-                  </form>
-                </section>
-
-                <section
-                  class="auth-card auth-card--register"
-                  aria-labelledby="registerTitle"
-                >
-                  <div class="auth-card-head">
-                    <h2 id="registerTitle" class="auth-card-title">Đăng ký</h2>
-                  </div>
-
-                  <form id="registerForm" class="auth-form" action="#" method="post">
-                    <div class="auth-field">
-                      <label for="authRegisterEmail">Địa chỉ email *</label>
-                      <input
-                        id="authRegisterEmail"
-                        type="email"
-                        name="register_email"
-                        autocomplete="email"
-                      />
-                    </div>
-
-                    <div class="auth-field">
-                      <label for="authRegisterPassword">Mật khẩu *</label>
-                      <input
-                        id="authRegisterPassword"
-                        type="password"
-                        name="register_password"
-                        autocomplete="new-password"
-                      />
-                    </div>
-
-                    <div class="auth-field">
-                      <label for="authRegisterConfirm">Nhập lại mật khẩu *</label>
-                      <input
-                        id="authRegisterConfirm"
-                        type="password"
-                        name="register_confirm_password"
-                        autocomplete="new-password"
-                      />
-                    </div>
-
-                    <div class="auth-actions">
-                      <button class="auth-button auth-button--primary" type="submit">
-                        Đăng ký
-                      </button>
-                    </div>
-
-                    <p id="registerMessage" class="auth-feedback" hidden aria-live="polite"></p>
-                  </form>
-                </section>
-              </div>
+                </div>
             </div>
-          </div>
-        </section>
-      </main>
 
-      <div id="mobileOverlay" class="mobile-menu-overlay"></div>
+            <div class="header-bottom">
+                <div class="container wide-nav-inner">
+                    <nav class="wide-nav-nav" aria-label="Danh mục sản phẩm">
+                        <ul class="header-bottom-nav">
+                            <li><a href="/" class="nav-link-item">Trang chủ</a></li>
+                            <li><a href="#" class="nav-link-item">Steam Wallet</a></li>
+                            <li><a href="#" class="nav-link-item">Gift Card</a></li>
+                            <li><a href="#" class="nav-link-item">Mystery Box</a></li>
+                            <li><a href="#" class="nav-link-item">Khuyến mãi</a></li>
+                        </ul>
+                    </nav>
+                    <div class="search-area">
+                        <form class="searchform" action="#" method="get">
+                            <div class="searchform-wrapper">
+                                <input class="search-field" type="search" placeholder="Tìm game, gift card..." aria-label="Tìm kiếm sản phẩm" />
+                                <button class="search-submit" type="submit" aria-label="Tìm">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
 
-      <aside
-        id="mobileDrawer"
-        class="mobile-menu-drawer"
-        aria-hidden="true"
-        aria-label="Menu di động"
-      >
-        <div class="mobile-drawer-header">
-          <span>Danh mục</span>
-          <button id="closeDrawer" type="button" aria-label="Đóng menu">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
+        <main class="auth-page-main auth-page-main--experience">
+            <section class="auth-experience-section" aria-labelledby="authExperienceTitle">
+                <div class="container">
+                    <div class="auth-experience-grid auth-experience-grid--single">
+                        <section class="auth-workspace-panel auth-workspace-panel--login-only">
+                            <div class="auth-workspace-head auth-workspace-head--compact">
+                                <div>
+                                    <p class="auth-workspace-kicker">Account Console</p>
+                                    <h1 id="authExperienceTitle" class="auth-workspace-title">Đăng nhập tài khoản</h1>
+                                    <p class="auth-workspace-subtitle">Giữ lại đúng form đăng nhập và tối ưu lại bố cục để hiển thị gọn trên desktop, tablet và mobile.</p>
+                                </div>
+                                <div id="authGlobalBadge" class="auth-global-badge">
+                                    <i class="bi bi-lightning-charge"></i>
+                                    <span>Sẵn sàng</span>
+                                </div>
+                            </div>
 
-        <form class="searchform mobile-searchform" action="#" method="get">
-          <div class="searchform-wrapper mobile-search-wrapper">
-            <input
-              class="search-field"
-              type="search"
-              placeholder="Tìm game, thẻ nạp..."
-              aria-label="Tìm trên menu di động"
-            />
-            <button class="search-submit" type="submit" aria-label="Tìm">
-              <i class="bi bi-search"></i>
-            </button>
-          </div>
-        </form>
+                            <div class="auth-stage-stack auth-stage-stack--single">
+                                <section class="auth-stage-panel auth-stage-panel--flat is-active" data-auth-stage="login">
+                                    <div class="auth-panel-header">
+                                        <p class="auth-panel-kicker">Đăng nhập</p>
+                                        <h3>Truy cập tài khoản hiện có</h3>
+                                        <p class="auth-panel-copy">Nhập email và mật khẩu để đăng nhập. Giao diện đã được rút gọn để tập trung hoàn toàn vào thao tác chính.</p>
+                                    </div>
 
-        <nav class="mobile-drawer-nav" aria-label="Điều hướng di động">
-          <ul>
-            <li><a href="/">Trang chủ</a></li>
-            <li>
-              <button
-                class="mobile-dropdown-toggle"
-                type="button"
-                aria-expanded="false"
-              >
-                Steam Wallet
-                <i class="bi bi-chevron-down"></i>
-              </button>
-              <div class="mobile-submenu">
-                <a href="#">Nạp Steam 50K - 100K</a>
-                <a href="#">Nạp Steam 200K - 500K</a>
-                <a href="#">Nạp Steam Premium</a>
-              </div>
-            </li>
-            <li><a href="#">Gift Card</a></li>
-            <li><a href="#">Mystery Box</a></li>
-            <li><a href="#">Khuyến mãi</a></li>
-            <li><a href="/auth">Đăng nhập</a></li>
-          </ul>
-        </nav>
-      </aside>
+                                    <form id="loginForm" class="auth-form auth-form--login-only" novalidate>
+                                        <div class="auth-field">
+                                            <label for="authLoginEmail">Email</label>
+                                            <div class="auth-input-shell">
+                                                <span class="auth-input-icon"><i class="bi bi-at"></i></span>
+                                                <input id="authLoginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
+                                            </div>
+                                        </div>
+
+                                        <div class="auth-field">
+                                            <label for="authLoginPassword">Mật khẩu</label>
+                                            <div class="auth-input-shell auth-input-shell--password">
+                                                <span class="auth-input-icon"><i class="bi bi-shield-lock"></i></span>
+                                                <input id="authLoginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" />
+                                                <button class="auth-password-toggle" type="button" data-password-toggle="authLoginPassword" aria-label="Hiện mật khẩu">
+                                                    <i class="bi bi-eye"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div class="auth-actions auth-actions--stacked">
+                                            <button class="auth-button auth-button--primary auth-button--full" type="submit">
+                                                <i class="bi bi-box-arrow-in-right"></i>
+                                                <span>Đăng nhập</span>
+                                            </button>
+                                        </div>
+
+                                        <p id="loginMessage" class="auth-status" hidden aria-live="polite"></p>
+                                    </form>
+                                </section>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/ui/script.js" asp-append-version="true"></script>
-    <script src="~/ui/auth-api.js" asp-append-version="true"></script>
-  </body>
+    <script src="~/js/auth-page.js" asp-append-version="true"></script>
+</body>
 </html>

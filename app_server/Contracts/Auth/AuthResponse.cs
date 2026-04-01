@@ -6,7 +6,11 @@ public class AuthResponse
 
     public string Email { get; set; } = null!;
 
+    public string DisplayName { get; set; } = null!;
+
     public string Status { get; set; } = null!;
+
+    public bool EmailVerified { get; set; }
 
     public List<string> Roles { get; set; } = [];
 
