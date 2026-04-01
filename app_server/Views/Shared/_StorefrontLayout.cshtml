@@ -1,0 +1,187 @@
+@{
+    var title = ViewData["Title"]?.ToString() ?? "Deluxe Gaming";
+    var active = ViewData["StoreActive"]?.ToString() ?? string.Empty;
+}
+<!doctype html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title</title>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="stylesheet" href="~/ui/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ui/storefront-bridge.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <div class="ambient-glow" aria-hidden="true">
+        <span class="ambient-glow__halo"></span>
+        <span class="ambient-glow__core"></span>
+    </div>
+
+    <div class="page-shell">
+        <header id="header" class="header-wrapper">
+            <div id="top-bar" class="header-top hide-for-sticky nav-dark">
+                <div class="topbar">
+                    <div class="marquee" aria-label="Thông báo nổi bật">
+                        <div class="marquee-track">
+                            <span class="marquee-item">Kho game Steam được đồng bộ theo từng sản phẩm trong hệ thống Deluxe Gaming.</span>
+                            <span class="marquee-item">Bấm vào card sản phẩm để xem detail game, hình ảnh, cấu hình và dữ liệu Steam chính thức.</span>
+                            <span class="marquee-item">Admin có thể gán <strong>Steam App ID</strong> ngay trong Game Workspace để đồng bộ detail page.</span>
+                            <span class="marquee-item">Kho game Steam được đồng bộ theo từng sản phẩm trong hệ thống Deluxe Gaming.</span>
+                            <span class="marquee-item">Bấm vào card sản phẩm để xem detail game, hình ảnh, cấu hình và dữ liệu Steam chính thức.</span>
+                            <span class="marquee-item">Admin có thể gán <strong>Steam App ID</strong> ngay trong Game Workspace để đồng bộ detail page.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="masthead" class="header-main hide-for-sticky nav-dark">
+                <div class="header-inner flex-row container logo-left medium-logo-center" role="navigation" aria-label="Điều hướng chính">
+                    <div class="flex-col show-for-medium flex-left">
+                        <ul class="mobile-nav nav nav-left">
+                            <li class="nav-icon has-icon">
+                                <button id="mobileMenuToggle" class="menu-toggle-btn" type="button" aria-label="Mở menu" aria-controls="mobileDrawer" aria-expanded="false">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div id="logo" class="flex-col logo">
+                        <a asp-controller="Home" asp-action="Index" title="Deluxe Gaming" rel="home" class="logo-link">
+                            <img src="https://deluxegaming.vn/wp-content/uploads/2025/11/logo-deluxe-1024x202.png" alt="Deluxe Gaming" class="header_logo header-logo" />
+                        </a>
+                    </div>
+
+                    <div class="flex-col hide-for-medium flex-left flex-grow">
+                        <ul class="header-nav header-nav-main nav nav-left"></ul>
+                    </div>
+
+                    <div class="flex-col hide-for-medium flex-right">
+                        <ul class="header-nav header-nav-main nav nav-right">
+                            <li class="account-item has-icon">
+                                <a asp-controller="AuthPage" asp-action="Index" class="nav-top-link nav-top-not-logged-in is-small" title="Tài khoản">
+                                    <span>Tài khoản</span>
+                                </a>
+                            </li>
+                            <li class="cart-item has-icon">
+                                <div class="header-button">
+                                    <a href="#" class="header-cart-link icon primary button circle is-small" title="Giỏ hàng">
+                                        <span class="header-cart-title">Giỏ hàng</span>
+                                        <i class="fa-solid fa-basket-shopping" data-icon-label="0"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <div class="flex-col show-for-medium flex-right">
+                        <ul class="mobile-nav nav nav-right">
+                            <li class="cart-item has-icon">
+                                <div class="header-button">
+                                    <a href="#" class="header-cart-link icon primary button circle is-small mobile-cart" title="Giỏ hàng">
+                                        <i class="fa-solid fa-basket-shopping" data-icon-label="0"></i>
+                                    </a>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mobile-header-search show-on-mobile-search">
+                <div class="container mobile-header-search-inner">
+                    <form class="mobile-header-search-form" asp-controller="Home" asp-action="Index" method="get">
+                        <div class="mobile-header-search-shell">
+                            <input class="mobile-header-search-input" type="search" name="q" placeholder="Tìm game..." aria-label="Tìm kiếm trên giao diện di động" />
+                            <button class="mobile-header-search-button" type="submit" aria-label="Tìm">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="header-bottom">
+                <div class="container wide-nav-inner">
+                    <nav class="wide-nav-nav" aria-label="Danh mục sản phẩm">
+                        <ul class="header-bottom-nav">
+                            <li>
+                                <a asp-controller="Home" asp-action="Index" class="nav-link-item @(active == "home" ? "active" : null)">Trang chủ</a>
+                            </li>
+                            <li><a href="#" class="nav-link-item">Steam Wallet</a></li>
+                            <li><a href="#" class="nav-link-item">Gift Card</a></li>
+                            <li><a href="#" class="nav-link-item">Mystery Box</a></li>
+                            <li><a href="#" class="nav-link-item">Khuyến mãi</a></li>
+                            <li><a asp-controller="AuthPage" asp-action="Index" class="nav-link-item">Đăng nhập</a></li>
+                        </ul>
+                    </nav>
+
+                    <div class="search-area">
+                        <form class="searchform" asp-controller="Home" asp-action="Index" method="get">
+                            <div class="searchform-wrapper">
+                                <input class="search-field" type="search" name="q" placeholder="Tìm kiếm sản phẩm..." aria-label="Tìm kiếm sản phẩm" />
+                                <button class="search-submit" type="submit" aria-label="Tìm">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        @RenderBody()
+
+        <div id="mobileOverlay" class="mobile-menu-overlay"></div>
+
+        <aside id="mobileDrawer" class="mobile-menu-drawer" aria-hidden="true" aria-label="Menu di động">
+            <div class="mobile-drawer-header">
+                <span>Danh mục</span>
+                <button id="closeDrawer" type="button" aria-label="Đóng menu">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+
+            <form class="searchform mobile-searchform" asp-controller="Home" asp-action="Index" method="get">
+                <div class="searchform-wrapper mobile-search-wrapper">
+                    <input class="search-field" type="search" name="q" placeholder="Tìm game, thẻ nạp..." aria-label="Tìm trên menu di động" />
+                    <button class="search-submit" type="submit" aria-label="Tìm">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <nav class="mobile-drawer-nav" aria-label="Điều hướng di động">
+                <ul>
+                    <li><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li>
+                        <button class="mobile-dropdown-toggle" type="button" aria-expanded="false">
+                            Steam Wallet
+                            <i class="bi bi-chevron-down"></i>
+                        </button>
+                        <div class="mobile-submenu">
+                            <a href="#">Nạp Steam 50K - 100K</a>
+                            <a href="#">Nạp Steam 200K - 500K</a>
+                            <a href="#">Nạp Steam Premium</a>
+                        </div>
+                    </li>
+                    <li><a href="#">Gift Card</a></li>
+                    <li><a href="#">Mystery Box</a></li>
+                    <li><a href="#">Khuyến mãi</a></li>
+                    <li><a asp-controller="AuthPage" asp-action="Index">Đăng nhập</a></li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/ui/script.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

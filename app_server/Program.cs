@@ -4,6 +4,7 @@ using app_server.Infrastructure;
 using app_server.Models;
 using app_server.Options;
 using app_server.Services.Auth;
+using app_server.Services.Storefront;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -14,6 +15,7 @@ builder.Configuration.AddJsonFile("appsettings.Local.json", optional: true, relo
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
+builder.Services.AddMemoryCache();
 builder.Services.AddDbContext<LauncherDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("sql_server")));
 
@@ -63,6 +65,11 @@ builder.Services.AddScoped<IOtpGenerator, OtpGenerator>();
 builder.Services.AddScoped<IUserOtpService, UserOtpService>();
 builder.Services.AddScoped<IAuthEmailService, AuthEmailService>();
 builder.Services.AddScoped<AuthService>();
+builder.Services.AddHttpClient<ISteamStoreService, SteamStoreService>(client =>
+{
+    client.BaseAddress = new Uri("https://store.steampowered.com/");
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("LauncherStorefront/1.0");
+});
 var app = builder.Build();
 
 await DatabaseInitializer.EnsureAuthTablesAsync(app.Services);

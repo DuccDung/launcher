@@ -1,25 +1,44 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
+using app_server.Models;
+using app_server.Services.Storefront;
+using app_server.ViewModels.Storefront;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
-namespace app_server.Controllers.View
+namespace app_server.Controllers.View;
+
+public sealed class HomeController(LauncherDbContext dbContext, ILogger<HomeController> logger) : Controller
 {
-    public class HomeController : Controller
+    public async Task<IActionResult> Index(string? q, CancellationToken cancellationToken)
     {
-        private readonly ILogger<HomeController> _logger;
+        var keyword = string.IsNullOrWhiteSpace(q) ? null : q.Trim();
 
-        public HomeController(ILogger<HomeController> logger)
-        {
-            _logger = logger;
-        }
+        var games = await dbContext.Games
+            .AsNoTracking()
+            .Include(item => item.GameCategories)
+                .ThenInclude(item => item.Category)
+            .Include(item => item.MediaItems)
+            .Where(item => item.SteamAppId != null &&
+                           (keyword == null ||
+                            item.Name.Contains(keyword) ||
+                            item.GameCategories.Any(category => category.Category != null && category.Category.Name.Contains(keyword))))
+            .OrderByDescending(item => item.UpdatedAt)
+            .Take(24)
+            .ToListAsync(cancellationToken);
 
-        public IActionResult Index()
+        var model = new StorefrontHomeViewModel
         {
-            return View();
-        }
+            Games = games.Select(StorefrontViewModelFactory.ToProductCard).ToArray()
+        };
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+        ViewData["Title"] = "Deluxe Gaming";
+        ViewData["StoreActive"] = "home";
+        ViewData["SearchQuery"] = keyword;
+        return View(model);
+    }
+
+    public IActionResult Privacy()
+    {
+        logger.LogInformation("Privacy page was requested.");
+        return View();
     }
 }

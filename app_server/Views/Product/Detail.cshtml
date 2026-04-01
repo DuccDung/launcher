@@ -1,0 +1,392 @@
+@model app_server.ViewModels.Storefront.ProductDetailViewModel
+@using System.Globalization
+@{
+    Layout = "~/Views/Shared/_StorefrontLayout.cshtml";
+    var firstGallery = Model.Gallery.FirstOrDefault();
+    var ratingValue = 0M;
+    decimal.TryParse(Model.RatingScoreText, NumberStyles.Any, CultureInfo.InvariantCulture, out ratingValue);
+}
+
+<main class="homepage-main product-page-main">
+    <section class="product-detail-section" aria-labelledby="productTitle">
+        <div class="container">
+            <header class="product-detail-header">
+                <h1 id="productTitle" class="product-detail-title">@Model.Name</h1>
+
+                <div class="product-detail-rating" aria-label="Đánh giá game">
+                    <span class="product-detail-stars" aria-hidden="true">
+                        @for (var star = 1; star <= 5; star++)
+                        {
+                            if (ratingValue >= star - 0.25M)
+                            {
+                                <i class="fa-solid fa-star"></i>
+                            }
+                            else if (ratingValue >= star - 0.75M)
+                            {
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            }
+                            else
+                            {
+                                <i class="fa-regular fa-star"></i>
+                            }
+                        }
+                    </span>
+                    <span class="product-detail-rating-score">@Model.RatingScoreText</span>
+                    <span class="product-detail-rating-count">@Model.RatingCountText</span>
+                </div>
+            </header>
+
+            <div class="product-detail-layout">
+                <section class="product-gallery" data-product-gallery>
+                    <div class="product-gallery-main">
+                        <button class="product-gallery-control product-gallery-control--prev" type="button" aria-label="Ảnh trước" data-product-prev>
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+
+                        <img src="@(firstGallery?.FullUrl ?? Model.CoverImageUrl)"
+                             alt="@(firstGallery?.Alt ?? Model.Name)"
+                             class="product-gallery-main-image"
+                             data-product-main-image />
+
+                        <button class="product-gallery-control product-gallery-control--next" type="button" aria-label="Ảnh tiếp theo" data-product-next>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                        <button class="product-gallery-expand" type="button" aria-label="Phóng to ảnh">
+                            <i class="bi bi-arrows-fullscreen"></i>
+                        </button>
+                    </div>
+
+                    @if (Model.Gallery.Count > 1)
+                    {
+                        <div class="product-gallery-thumbs-shell">
+                            <button class="product-gallery-thumbs-nav product-gallery-thumbs-nav--prev" type="button" aria-label="Xem ảnh nhỏ trước" data-product-thumb-prev>
+                                <i class="bi bi-chevron-left"></i>
+                            </button>
+
+                            <div class="product-gallery-thumbs-viewport" data-product-thumb-viewport>
+                                <div class="product-gallery-thumbs" data-product-thumb-track>
+                                    @for (var index = 0; index < Model.Gallery.Count; index++)
+                                    {
+                                        var item = Model.Gallery[index];
+                                        <button class="product-gallery-thumb @(index == 0 ? "is-active is-viewed" : null)"
+                                                type="button"
+                                                data-product-thumb
+                                                data-full-src="@item.FullUrl"
+                                                data-full-alt="@item.Alt"
+                                                data-main-position="@item.MainPosition">
+                                            <img src="@item.ThumbnailUrl" alt="@item.Alt" />
+                                        </button>
+                                    }
+                                </div>
+                            </div>
+
+                            <button class="product-gallery-thumbs-nav product-gallery-thumbs-nav--next" type="button" aria-label="Xem ảnh nhỏ tiếp theo" data-product-thumb-next>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    }
+                </section>
+
+                <aside class="product-summary">
+                    <div class="product-summary-cover">
+                        <img src="@Model.CoverImageUrl" alt="@Model.Name" />
+                    </div>
+
+                    <div class="product-age-card">
+                        <div class="product-age-badge">
+                            <span class="product-age-letter">@Model.AgeLetter</span>
+                            <span class="product-age-caption">@Model.AgeCaption</span>
+                        </div>
+
+                        <div class="product-age-copy">
+                            <strong>@Model.StatusText</strong>
+                            <span>@Model.AgeDescription</span>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(Model.ShortDescription))
+                    {
+                        <div class="storefront-summary-copy">
+                            <p>@Model.ShortDescription</p>
+                        </div>
+                    }
+
+                    @if (Model.SummaryTags.Count > 0)
+                    {
+                        <div class="product-summary-block">
+                            <h2 class="product-summary-label">Thể loại và tính năng:</h2>
+                            <div class="product-summary-tags">
+                                @foreach (var tag in Model.SummaryTags)
+                                {
+                                    <span class="product-summary-tag">@tag</span>
+                                }
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Facts.Count > 0)
+                    {
+                        <div class="storefront-fact-list">
+                            @foreach (var fact in Model.Facts)
+                            {
+                                <div class="storefront-fact-item">
+                                    <span class="storefront-fact-label">@fact.Label</span>
+                                    <strong class="storefront-fact-value">@fact.Value</strong>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.Website))
+                    {
+                        <a href="@Model.Website" target="_blank" rel="noopener noreferrer" class="storefront-link-button">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                            <span>Website chính thức</span>
+                        </a>
+                    }
+
+                    <div class="product-summary-price-row">
+                        <strong class="product-summary-new-price">@Model.NewPriceText</strong>
+                        @if (!string.IsNullOrWhiteSpace(Model.OldPriceText))
+                        {
+                            <span class="product-summary-old-price">@Model.OldPriceText</span>
+                        }
+                        @if (!string.IsNullOrWhiteSpace(Model.DiscountText))
+                        {
+                            <span class="product-summary-discount">@Model.DiscountText</span>
+                        }
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-purchase-section" aria-labelledby="purchaseInfoTitle">
+        <div class="container">
+            <div class="product-purchase-layout">
+                <aside class="product-offer-column" data-edition-switcher>
+                    <div class="product-offer-card">
+                        <h2 class="product-offer-heading">CLICK ĐỂ CHỌN PHIÊN BẢN:</h2>
+
+                        <div class="product-offer-versions" role="group" aria-label="Lựa chọn phiên bản">
+                            @foreach (var edition in Model.Editions)
+                            {
+                                <button class="product-edition-chip @(edition.IsActive ? "is-active" : null)"
+                                        type="button"
+                                        data-edition-option
+                                        data-edition-note="@edition.Note"
+                                        aria-pressed="@(edition.IsActive ? "true" : "false")">
+                                    @edition.Name
+                                </button>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="product-edition-note">
+                        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                        <p data-edition-note>@Model.EditionNote</p>
+                    </div>
+
+                    <div class="product-offer-actions">
+                        <button class="product-offer-button is-primary" type="button">Mua ngay</button>
+                        <button class="product-offer-button is-secondary" type="button">Thêm vào giỏ hàng</button>
+                        <a asp-controller="AuthPage" asp-action="Index" class="product-offer-button is-secondary">Đăng nhập</a>
+                    </div>
+                </aside>
+
+                <article class="product-package-card" aria-labelledby="purchaseInfoTitle">
+                    <h2 id="purchaseInfoTitle" class="product-package-title">Thông tin gói mua:</h2>
+
+                    <ul class="product-package-list">
+                        @foreach (var item in Model.PackageItems)
+                        {
+                            <li>
+                                <i class="bi bi-check-lg" aria-hidden="true"></i>
+                                <span>@item</span>
+                            </li>
+                        }
+                    </ul>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-media-specs-section" aria-labelledby="productOverviewTitle">
+        <div class="container">
+            <div class="product-media-specs-layout">
+                <div class="product-media-specs-main storefront-detail-stack">
+                    @if (!string.IsNullOrWhiteSpace(Model.AboutTheGameHtml))
+                    {
+                        <article class="product-package-card storefront-rich-card">
+                            <h2 id="productOverviewTitle" class="product-package-title">Tổng quan game</h2>
+                            <div class="storefront-html-content">
+                                @Html.Raw(Model.AboutTheGameHtml)
+                            </div>
+                        </article>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.DetailedDescriptionHtml))
+                    {
+                        <article class="product-package-card storefront-rich-card">
+                            <h2 class="product-package-title">Chi tiết nội dung</h2>
+                            <div class="storefront-html-content">
+                                @Html.Raw(Model.DetailedDescriptionHtml)
+                            </div>
+                        </article>
+                    }
+
+                    @if (Model.Requirements.Count > 0)
+                    {
+                        <article class="product-package-card storefront-rich-card">
+                            <h2 class="product-package-title">Cấu hình hệ thống</h2>
+                            <div class="storefront-requirement-grid">
+                                @foreach (var requirement in Model.Requirements)
+                                {
+                                    <section class="storefront-requirement-card">
+                                        <h3>@requirement.Platform</h3>
+                                        <div class="storefront-html-content storefront-requirement-body">
+                                            @Html.Raw(requirement.Html)
+                                        </div>
+                                    </section>
+                                }
+                            </div>
+                        </article>
+                    }
+
+                    @if (!string.IsNullOrWhiteSpace(Model.SteamReviewsHtml))
+                    {
+                        <article class="product-review-panel storefront-review-panel">
+                            <h2 class="product-review-panel-title">Review nổi bật từ Steam</h2>
+                            <div class="storefront-html-content storefront-review-html">
+                                @Html.Raw(Model.SteamReviewsHtml)
+                            </div>
+                        </article>
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-review-entry-section" aria-labelledby="yourReviewTitle">
+        <div class="container">
+            <div class="product-media-specs-layout">
+                <div class="product-media-specs-main">
+                    <article class="product-review-panel">
+                        <h2 id="yourReviewTitle" class="product-review-panel-title">Đánh giá của bạn</h2>
+                        <div class="product-review-login-note" role="note">
+                            <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+                            <span>Vui lòng đăng nhập để có thể đánh giá sản phẩm.</span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="product-customer-review-section" aria-labelledby="customerReviewsTitle">
+        <div class="container">
+            <div class="product-media-specs-layout">
+                <div class="product-media-specs-main">
+                    <article class="product-review-panel">
+                        <h2 id="customerReviewsTitle" class="product-review-panel-title">Đánh giá từ khách hàng</h2>
+
+                        @if (Model.CustomerReviews.Count > 0)
+                        {
+                            <div class="product-customer-review-list">
+                                @foreach (var review in Model.CustomerReviews)
+                                {
+                                    var reviewRating = 0M;
+                                    decimal.TryParse(review.RatingText, NumberStyles.Any, CultureInfo.InvariantCulture, out reviewRating);
+                                    <article class="customer-review-card">
+                                        <div class="customer-review-head">
+                                            <div class="customer-review-avatar">@review.AvatarText</div>
+                                            <div class="customer-review-meta">
+                                                <h3>@review.DisplayName</h3>
+                                                <div class="customer-review-rating-row">
+                                                    <span class="customer-review-stars" aria-label="@review.RatingText sao">
+                                                        @for (var star = 1; star <= 5; star++)
+                                                        {
+                                                            <i class="@(reviewRating >= star - 0.25M ? "fa-solid fa-star" : reviewRating >= star - 0.75M ? "fa-solid fa-star-half-stroke" : "fa-regular fa-star")"></i>
+                                                        }
+                                                    </span>
+                                                    <span>@review.CreatedAtText</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <p>@review.ReviewText</p>
+                                    </article>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="product-review-login-note storefront-empty-note" role="note">
+                                <i class="bi bi-chat-left-text" aria-hidden="true"></i>
+                                <span>Chưa có review nào trong hệ thống cho sản phẩm này.</span>
+                            </div>
+                        }
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    @if (Model.RelatedProducts.Count > 0)
+    {
+        <section class="product-related-section" aria-labelledby="relatedProductsTitle">
+            <div class="container">
+                <div class="product-related-header">
+                    <h2 id="relatedProductsTitle" class="product-related-title">Sản phẩm tương tự</h2>
+                </div>
+
+                <div class="product-related-carousel" data-related-carousel>
+                    <button class="product-related-nav product-related-nav--prev" type="button" aria-label="Sản phẩm trước" data-related-prev>
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+
+                    <div class="product-related-viewport" data-related-viewport>
+                        <div class="product-related-track">
+                            @foreach (var game in Model.RelatedProducts)
+                            {
+                                <article class="aaa-game-card product-related-card">
+                                    <a asp-controller="Product"
+                                       asp-action="Detail"
+                                       asp-route-gameId="@game.GameId"
+                                       asp-route-slug="@game.Slug"
+                                       class="aaa-game-link"
+                                       aria-label="Mở chi tiết @game.Name">
+                                        <div class="aaa-game-poster">
+                                            <span class="aaa-game-badge">@game.Badge</span>
+                                            <img src="@game.PosterImageUrl" alt="@game.Name" class="aaa-game-image" loading="lazy" />
+                                        </div>
+
+                                        <div class="aaa-game-body">
+                                            <span class="aaa-game-tag">@game.Tag</span>
+                                            <h3 class="aaa-game-name">@game.Name</h3>
+                                            <div class="aaa-game-price-row">
+                                                @if (!string.IsNullOrWhiteSpace(game.DiscountText))
+                                                {
+                                                    <span class="aaa-game-discount">@game.DiscountText</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(game.OldPriceText))
+                                                {
+                                                    <span class="aaa-game-old-price">@game.OldPriceText</span>
+                                                }
+                                                <strong class="aaa-game-new-price">@game.NewPriceText</strong>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </article>
+                            }
+                        </div>
+                    </div>
+
+                    <button class="product-related-nav product-related-nav--next" type="button" aria-label="Sản phẩm tiếp theo" data-related-next>
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+    }
+</main>

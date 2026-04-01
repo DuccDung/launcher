@@ -8,6 +8,9 @@ public sealed class AdminGameUpsertRequest
     [StringLength(255)]
     public string Name { get; set; } = string.Empty;
 
+    [Range(1, int.MaxValue, ErrorMessage = "Steam App ID phải lớn hơn 0.")]
+    public int? SteamAppId { get; set; }
+
     [Required(ErrorMessage = "Rating là bắt buộc.")]
     [Range(typeof(decimal), "0", "5", ErrorMessage = "Rating phải nằm trong khoảng từ 0 đến 5.")]
     public decimal? Rating { get; set; }
@@ -102,6 +105,7 @@ public sealed record AdminWorkspaceGameListItemResponse(
     Guid GameId,
     string Name,
     string Slug,
+    int? SteamAppId,
     decimal? Rating,
     decimal? OldPrice,
     decimal? NewPrice,
@@ -116,6 +120,7 @@ public sealed record AdminWorkspaceGameResponse(
     Guid GameId,
     string Name,
     string Slug,
+    int? SteamAppId,
     decimal? Rating,
     decimal? OldPrice,
     decimal? NewPrice,

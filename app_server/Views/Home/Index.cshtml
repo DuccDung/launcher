@@ -1,5 +1,80 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+@model app_server.ViewModels.Storefront.StorefrontHomeViewModel
 @{
+    Layout = "~/Views/Shared/_StorefrontLayout.cshtml";
+    var keyword = ViewData["SearchQuery"]?.ToString();
 }
+
+<main class="homepage-main">
+    <section class="storefront-hero-section" aria-labelledby="storefrontHeroTitle">
+        <div class="container">
+            <div class="storefront-hero-card">
+                <span class="storefront-hero-eyebrow">Steam Integrated Catalog</span>
+                <h1 id="storefrontHeroTitle">Kho sản phẩm đã nối detail page với Steam API</h1>
+                <p class="storefront-hero-copy">
+                    Chọn một card game để mở trang chi tiết, lấy dữ liệu thật từ Steam và render bằng giao diện storefront trong hệ thống `app_server`.
+                </p>
+                @if (!string.IsNullOrWhiteSpace(keyword))
+                {
+                    <div class="storefront-search-pill">
+                        <span>Kết quả cho:</span>
+                        <strong>@keyword</strong>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="aaa-games-section" aria-labelledby="aaaGamesTitle">
+        <div class="container">
+            <h2 id="aaaGamesTitle" class="aaa-games-title">Game Bom Tấn AAA</h2>
+
+            @if (Model.Games.Count > 0)
+            {
+                <div class="aaa-games-grid">
+                    @foreach (var game in Model.Games)
+                    {
+                        <article class="aaa-game-card">
+                            <a asp-controller="Product"
+                               asp-action="Detail"
+                               asp-route-gameId="@game.GameId"
+                               asp-route-slug="@game.Slug"
+                               class="aaa-game-link"
+                               aria-label="Mở chi tiết @game.Name">
+                                <div class="aaa-game-poster">
+                                    <span class="aaa-game-badge">@game.Badge</span>
+                                    <img src="@game.PosterImageUrl"
+                                         alt="@game.Name"
+                                         class="aaa-game-image"
+                                         loading="lazy" />
+                                </div>
+
+                                <div class="aaa-game-body">
+                                    <span class="aaa-game-tag">@game.Tag</span>
+                                    <h3 class="aaa-game-name">@game.Name</h3>
+                                    <div class="aaa-game-price-row">
+                                        @if (!string.IsNullOrWhiteSpace(game.DiscountText))
+                                        {
+                                            <span class="aaa-game-discount">@game.DiscountText</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(game.OldPriceText))
+                                        {
+                                            <span class="aaa-game-old-price">@game.OldPriceText</span>
+                                        }
+                                        <strong class="aaa-game-new-price">@game.NewPriceText</strong>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="storefront-empty-state">
+                    <strong>Chưa có game nào sẵn sàng hiển thị.</strong>
+                    <span>Hãy gán `Steam App ID` cho game trong admin workspace để card sản phẩm xuất hiện tại đây.</span>
+                </div>
+            }
+        </div>
+    </section>
+</main>

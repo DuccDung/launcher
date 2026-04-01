@@ -43,6 +43,7 @@
     search: q("game-list-search"),
     filterCat: q("game-list-category-filter"),
     gameName: q("game-name"),
+    gameSteamAppId: q("game-steam-app-id"),
     gameRating: q("game-rating"),
     gameOldPrice: q("game-old-price"),
     gameNewPrice: q("game-new-price"),
@@ -614,6 +615,7 @@
     const name = game?.name || "";
 
     r.gameName.value = name;
+    r.gameSteamAppId.value = game?.steamAppId ?? "";
     r.gameRating.value = game?.rating ?? "";
     r.gameOldPrice.value = game?.oldPrice ?? "";
     r.gameNewPrice.value = game?.newPrice ?? "";
@@ -647,6 +649,7 @@
     r.gameSummary.innerHTML = [
       ["Game hiện tại", summaryName],
       ["Slug preview", `/${slug(summaryName) || "game-moi"}`],
+      ["Steam App ID", game?.steamAppId ?? "Chưa gắn"],
       ["Category", chosen.map((item) => item.name).join(", ") || "Chưa chọn"],
       ["Giá mới", money(r.gameNewPrice.value || game?.newPrice)],
       [
@@ -740,6 +743,7 @@
     r.gameSummary.innerHTML = [
       ["Game hiện tại", summaryName],
       ["Slug preview", `/${slug(summaryName) || "game-moi"}`],
+      ["Steam App ID", trim(r.gameSteamAppId.value) || fallbackGame?.steamAppId || "Chưa gắn"],
       ["Category", chosen.map((item) => item.name).join(", ") || "Chưa chọn"],
       ["Giá mới", money(r.gameNewPrice.value || fallbackGame?.newPrice)],
       [
@@ -1241,6 +1245,7 @@
   function gamePayload() {
     return {
       name: trim(r.gameName.value),
+      steamAppId: num(r.gameSteamAppId.value),
       rating: num(r.gameRating.value),
       oldPrice: num(r.gameOldPrice.value),
       newPrice: num(r.gameNewPrice.value),
@@ -1249,7 +1254,7 @@
   }
 
   function clearGameValidation() {
-    [r.gameName, r.gameRating, r.gameOldPrice, r.gameNewPrice].forEach((input) => {
+    [r.gameName, r.gameSteamAppId, r.gameRating, r.gameOldPrice, r.gameNewPrice].forEach((input) => {
       input.setCustomValidity("");
     });
   }
@@ -1267,6 +1272,10 @@
 
     if (!payload.name) {
       return showGameValidation(r.gameName, "Tên game là bắt buộc.");
+    }
+
+    if (payload.steamAppId !== null && (!Number.isInteger(payload.steamAppId) || payload.steamAppId < 1)) {
+      return showGameValidation(r.gameSteamAppId, "Steam App ID phải là số nguyên lớn hơn 0.");
     }
 
     if (payload.rating === null) {
@@ -1899,7 +1908,7 @@
 
   r.search.addEventListener("input", renderGameListOnly);
   r.filterCat.addEventListener("change", renderGameListOnly);
-  [r.gameName, r.gameRating, r.gameOldPrice, r.gameNewPrice].forEach((item) => {
+  [r.gameName, r.gameSteamAppId, r.gameRating, r.gameOldPrice, r.gameNewPrice].forEach((item) => {
     item.addEventListener("input", () => {
       item.setCustomValidity("");
       refreshGameDraftUi();

@@ -23,6 +23,9 @@ public partial class Game
     [Column("new_price", TypeName = "decimal(18,2)")]
     public decimal? NewPrice { get; set; }
 
+    [Column("steam_app_id")]
+    public int? SteamAppId { get; set; }
+
     [Column("created_at", TypeName = "datetime2(0)")]
     public DateTime CreatedAt { get; set; }
 

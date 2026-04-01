@@ -53,6 +53,7 @@ public sealed class AdminGameWorkspaceController(
         var game = new Game
         {
             Name = request.Name.Trim(),
+            SteamAppId = request.SteamAppId,
             Rating = request.Rating,
             OldPrice = request.OldPrice,
             NewPrice = request.NewPrice,
@@ -87,6 +88,7 @@ public sealed class AdminGameWorkspaceController(
         }
 
         game.Name = request.Name.Trim();
+        game.SteamAppId = request.SteamAppId;
         game.Rating = request.Rating;
         game.OldPrice = request.OldPrice;
         game.NewPrice = request.NewPrice;
@@ -572,6 +574,7 @@ public sealed class AdminGameWorkspaceController(
             {
                 item.GameId,
                 item.Name,
+                item.SteamAppId,
                 item.Rating,
                 item.OldPrice,
                 item.NewPrice,
@@ -633,6 +636,7 @@ public sealed class AdminGameWorkspaceController(
                     item.GameId,
                     item.Name,
                     Slugify(item.Name),
+                    item.SteamAppId,
                     item.Rating,
                     item.OldPrice,
                     item.NewPrice,
@@ -704,6 +708,7 @@ public sealed class AdminGameWorkspaceController(
             {
                 item.GameId,
                 item.Name,
+                item.SteamAppId,
                 item.Rating,
                 item.OldPrice,
                 item.NewPrice,
@@ -811,6 +816,7 @@ public sealed class AdminGameWorkspaceController(
                 game.GameId,
                 game.Name,
                 Slugify(game.Name),
+                game.SteamAppId,
                 game.Rating,
                 game.OldPrice,
                 game.NewPrice,

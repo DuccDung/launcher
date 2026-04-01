@@ -55,6 +55,15 @@ public static class DatabaseInitializer
                 CREATE INDEX IX_user_otps_user_id ON dbo.user_otps(user_id);
                 CREATE INDEX IX_user_otps_email_purpose ON dbo.user_otps(email, purpose);
             END
+
+            IF OBJECT_ID('dbo.games', 'U') IS NOT NULL
+               AND COL_LENGTH('dbo.games', 'steam_app_id') IS NULL
+            BEGIN
+                ALTER TABLE dbo.games
+                ADD steam_app_id int NULL;
+
+                CREATE INDEX IX_games_steam_app_id ON dbo.games(steam_app_id);
+            END
             """;
 
         await dbContext.Database.ExecuteSqlRawAsync(sql);

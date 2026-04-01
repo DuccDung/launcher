@@ -1,0 +1,300 @@
+.storefront-hero-section {
+    padding: 26px 0 10px;
+}
+
+.storefront-hero-card {
+    padding: 28px 32px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(circle at top right, rgba(226, 132, 67, 0.18), transparent 28%),
+        linear-gradient(180deg, rgba(19, 19, 19, 0.98), rgba(12, 12, 12, 0.98));
+    box-shadow: 0 24px 48px rgba(0, 0, 0, 0.26);
+}
+
+.storefront-hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    padding: 0 12px;
+    border-radius: 999px;
+    background: rgba(226, 132, 67, 0.12);
+    color: var(--accent-strong);
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.storefront-hero-card h1 {
+    margin: 16px 0 12px;
+    max-width: 720px;
+    color: #ffffff;
+    font-size: clamp(1.8rem, 3.4vw, 3rem);
+    font-weight: 700;
+    line-height: 1.12;
+}
+
+.storefront-hero-copy {
+    max-width: 760px;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.76);
+    font-size: 1rem;
+    line-height: 1.7;
+}
+
+.storefront-search-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.storefront-search-pill strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.storefront-empty-state {
+    display: grid;
+    gap: 10px;
+    padding: 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(17, 17, 17, 0.94);
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.storefront-empty-state strong {
+    color: #ffffff;
+    font-size: 1rem;
+}
+
+.storefront-summary-copy {
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.storefront-summary-copy p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.94rem;
+    line-height: 1.7;
+}
+
+.storefront-fact-list {
+    display: grid;
+    gap: 10px;
+}
+
+.storefront-fact-item {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.storefront-fact-label {
+    color: rgba(255, 255, 255, 0.56);
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.storefront-fact-value {
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.5;
+}
+
+.storefront-link-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: #ffffff;
+    font-size: 0.92rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.storefront-link-button:hover,
+.storefront-link-button:focus-visible {
+    color: #ffffff;
+    background: rgba(226, 132, 67, 0.12);
+    border-color: rgba(226, 132, 67, 0.28);
+    transform: translateY(-1px);
+}
+
+.storefront-detail-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.storefront-rich-card {
+    display: grid;
+    gap: 20px;
+}
+
+.storefront-html-content {
+    color: rgba(255, 255, 255, 0.82);
+    font-size: 0.98rem;
+    line-height: 1.8;
+}
+
+.storefront-html-content p,
+.storefront-html-content ul,
+.storefront-html-content ol,
+.storefront-html-content blockquote {
+    margin: 0 0 14px;
+}
+
+.storefront-html-content ul,
+.storefront-html-content ol {
+    padding-left: 20px;
+}
+
+.storefront-html-content li {
+    margin-bottom: 8px;
+}
+
+.storefront-html-content strong {
+    color: #ffffff;
+    font-weight: 700;
+}
+
+.storefront-html-content a {
+    color: var(--accent-strong);
+    text-decoration: underline;
+}
+
+.storefront-requirement-grid {
+    display: grid;
+    gap: 18px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.storefront-requirement-card {
+    min-width: 0;
+    padding: 20px;
+    border-radius: 14px;
+    border: 1px solid rgba(121, 176, 255, 0.16);
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.storefront-requirement-card h3 {
+    margin: 0 0 14px;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.storefront-requirement-body {
+    font-size: 0.92rem;
+    line-height: 1.7;
+}
+
+.product-requirement-separator {
+    margin: 18px 0;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.storefront-review-panel {
+    overflow: hidden;
+}
+
+.storefront-review-html {
+    margin-top: 20px;
+}
+
+.storefront-review-html > *:last-child {
+    margin-bottom: 0;
+}
+
+.storefront-empty-note {
+    margin-top: 22px;
+}
+
+@media (max-width: 1199.98px) {
+    .storefront-requirement-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 991.98px) {
+    .storefront-hero-card {
+        padding: 24px;
+    }
+
+    .storefront-detail-stack {
+        gap: 20px;
+    }
+
+    .storefront-requirement-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .storefront-hero-section {
+        padding-top: 18px;
+    }
+
+    .storefront-hero-card {
+        padding: 20px 18px;
+        border-radius: 14px;
+    }
+
+    .storefront-hero-card h1 {
+        margin-top: 14px;
+    }
+
+    .storefront-hero-copy {
+        font-size: 0.92rem;
+        line-height: 1.65;
+    }
+
+    .storefront-search-pill {
+        margin-top: 16px;
+        font-size: 0.82rem;
+    }
+
+    .storefront-summary-copy {
+        padding: 12px 14px;
+    }
+
+    .storefront-fact-item {
+        padding: 11px 12px;
+    }
+
+    .storefront-link-button {
+        width: 100%;
+    }
+
+    .storefront-html-content {
+        font-size: 0.92rem;
+        line-height: 1.72;
+    }
+
+    .storefront-requirement-card {
+        padding: 16px;
+    }
+}
