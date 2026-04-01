@@ -97,10 +97,6 @@
                     <div class="auth-shell">
                         <div class="auth-shell-head">
                             <div class="auth-shell-brand">
-                                <p class="auth-brand-mark">
-                                    <span class="auth-brand-mark__base">Deluxe</span>
-                                    <span class="auth-brand-mark__accent">Gaming</span>
-                                </p>
                                 <h1 id="authPageTitle" class="auth-shell-title">Đăng nhập và đăng ký</h1>
                             </div>
                             <div class="auth-view-switch" role="tablist" aria-label="Chuyển biểu mẫu tài khoản">
@@ -115,12 +111,12 @@
                                     <h2 id="authLoginTitle" class="auth-card-title">Đăng nhập</h2>
                                 </div>
 
-                                <form id="loginForm" class="auth-form" novalidate>
+                                <form id="loginForm" class="auth-form" novalidate autocomplete="off">
                                     <div class="auth-field">
                                         <label for="authLoginEmail">Email</label>
                                         <div class="auth-input-shell">
                                             <span class="auth-input-icon"><i class="bi bi-at"></i></span>
-                                            <input id="authLoginEmail" type="email" autocomplete="username" placeholder="you@example.com" />
+                                            <input id="authLoginEmail" type="email" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                         </div>
                                     </div>
 
@@ -128,7 +124,7 @@
                                         <label for="authLoginPassword">Mật khẩu</label>
                                         <div class="auth-input-shell auth-input-shell--password">
                                             <span class="auth-input-icon"><i class="bi bi-shield-lock"></i></span>
-                                            <input id="authLoginPassword" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" />
+                                            <input id="authLoginPassword" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Nhập mật khẩu" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                             <button class="auth-password-toggle" type="button" data-password-toggle="authLoginPassword" aria-label="Hiện mật khẩu">
                                                 <i class="bi bi-eye"></i>
                                             </button>
@@ -157,12 +153,12 @@
                                     <h2 id="authRegisterTitle" class="auth-card-title">Đăng ký</h2>
                                 </div>
 
-                                <form id="registerForm" class="auth-form" novalidate>
+                                <form id="registerForm" class="auth-form" novalidate autocomplete="off">
                                     <div class="auth-field">
                                         <label for="authRegisterDisplayName">Tên hiển thị</label>
                                         <div class="auth-input-shell">
                                             <span class="auth-input-icon"><i class="bi bi-person-badge"></i></span>
-                                            <input id="authRegisterDisplayName" type="text" autocomplete="nickname" placeholder="Ví dụ: Dũng Deluxe" />
+                                            <input id="authRegisterDisplayName" type="text" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" placeholder="Ví dụ: Dũng Deluxe" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                         </div>
                                     </div>
 
@@ -170,7 +166,7 @@
                                         <label for="authRegisterEmail">Email</label>
                                         <div class="auth-input-shell">
                                             <span class="auth-input-icon"><i class="bi bi-envelope-paper"></i></span>
-                                            <input id="authRegisterEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+                                            <input id="authRegisterEmail" type="email" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                         </div>
                                     </div>
 
@@ -179,7 +175,7 @@
                                             <label for="authRegisterPassword">Mật khẩu</label>
                                             <div class="auth-input-shell auth-input-shell--password">
                                                 <span class="auth-input-icon"><i class="bi bi-key"></i></span>
-                                                <input id="authRegisterPassword" type="password" autocomplete="new-password" placeholder="Ít nhất 6 ký tự" />
+                                                <input id="authRegisterPassword" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Ít nhất 6 ký tự" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                                 <button class="auth-password-toggle" type="button" data-password-toggle="authRegisterPassword" aria-label="Hiện mật khẩu">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -190,7 +186,7 @@
                                             <label for="authRegisterConfirm">Nhập lại mật khẩu</label>
                                             <div class="auth-input-shell auth-input-shell--password">
                                                 <span class="auth-input-icon"><i class="bi bi-check2-circle"></i></span>
-                                                <input id="authRegisterConfirm" type="password" autocomplete="new-password" placeholder="Xác nhận mật khẩu" />
+                                                <input id="authRegisterConfirm" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Xác nhận mật khẩu" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                                 <button class="auth-password-toggle" type="button" data-password-toggle="authRegisterConfirm" aria-label="Hiện mật khẩu xác nhận">
                                                     <i class="bi bi-eye"></i>
                                                 </button>
@@ -228,11 +224,6 @@
             </button>
 
             <div class="auth-flow-shell">
-                <p class="auth-brand-mark auth-brand-mark--compact">
-                    <span class="auth-brand-mark__base">Deluxe</span>
-                    <span class="auth-brand-mark__accent">Gaming</span>
-                </p>
-
                 <section class="auth-stage-panel" data-auth-stage="verify">
                     <div class="auth-card-head auth-card-head--modal">
                         <h2 class="auth-card-title">Xác thực OTP</h2>
@@ -248,14 +239,14 @@
                         </div>
                     </div>
 
-                    <form id="verifyOtpForm" class="auth-form" novalidate>
+                    <form id="verifyOtpForm" class="auth-form" novalidate autocomplete="off">
                         <input id="verifyEmail" type="hidden" />
 
                         <div class="auth-field">
                             <label for="authVerifyOtp">Mã OTP</label>
                             <div class="auth-input-shell">
                                 <span class="auth-input-icon"><i class="bi bi-123"></i></span>
-                                <input id="authVerifyOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Nhập mã OTP" />
+                                <input id="authVerifyOtp" type="text" inputmode="numeric" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="12" placeholder="Nhập mã OTP" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                             </div>
                         </div>
 
@@ -276,12 +267,12 @@
                         <h2 class="auth-card-title">Quên mật khẩu</h2>
                     </div>
 
-                    <form id="forgotPasswordForm" class="auth-form" novalidate>
+                    <form id="forgotPasswordForm" class="auth-form" novalidate autocomplete="off">
                         <div class="auth-field">
                             <label for="authForgotEmail">Email tài khoản</label>
                             <div class="auth-input-shell">
                                 <span class="auth-input-icon"><i class="bi bi-envelope-open"></i></span>
-                                <input id="authForgotEmail" type="email" autocomplete="email" placeholder="you@example.com" />
+                                <input id="authForgotEmail" type="email" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="you@example.com" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                             </div>
                         </div>
 
@@ -306,14 +297,14 @@
                             </div>
                         </div>
 
-                        <form id="resetPasswordForm" class="auth-form" novalidate>
+                        <form id="resetPasswordForm" class="auth-form" novalidate autocomplete="off">
                             <input id="resetEmail" type="hidden" />
 
                             <div class="auth-field">
                                 <label for="authResetOtp">Mã OTP reset</label>
                                 <div class="auth-input-shell">
                                     <span class="auth-input-icon"><i class="bi bi-shield-check"></i></span>
-                                    <input id="authResetOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="12" placeholder="Nhập mã OTP reset" />
+                                    <input id="authResetOtp" type="text" inputmode="numeric" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" maxlength="12" placeholder="Nhập mã OTP reset" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                 </div>
                             </div>
 
@@ -322,7 +313,7 @@
                                     <label for="authResetPassword">Mật khẩu mới</label>
                                     <div class="auth-input-shell auth-input-shell--password">
                                         <span class="auth-input-icon"><i class="bi bi-lock"></i></span>
-                                        <input id="authResetPassword" type="password" autocomplete="new-password" placeholder="Tạo mật khẩu mới" />
+                                        <input id="authResetPassword" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Tạo mật khẩu mới" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                         <button class="auth-password-toggle" type="button" data-password-toggle="authResetPassword" aria-label="Hiện mật khẩu mới">
                                             <i class="bi bi-eye"></i>
                                         </button>
@@ -333,7 +324,7 @@
                                     <label for="authResetConfirm">Nhập lại mật khẩu</label>
                                     <div class="auth-input-shell auth-input-shell--password">
                                         <span class="auth-input-icon"><i class="bi bi-check2-square"></i></span>
-                                        <input id="authResetConfirm" type="password" autocomplete="new-password" placeholder="Xác nhận mật khẩu" />
+                                        <input id="authResetConfirm" type="password" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="Xác nhận mật khẩu" data-clear-on-load="true" data-unlock-on-focus="true" readonly />
                                         <button class="auth-password-toggle" type="button" data-password-toggle="authResetConfirm" aria-label="Hiện xác nhận mật khẩu">
                                             <i class="bi bi-eye"></i>
                                         </button>

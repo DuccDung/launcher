@@ -42,6 +42,25 @@ const resetExpiryText = document.getElementById("resetExpiryText");
 const resetPasswordBlock = document.getElementById("resetPasswordBlock");
 const resendResetOtpButton = document.getElementById("resendResetOtpButton");
 const passwordToggles = Array.from(document.querySelectorAll("[data-password-toggle]"));
+const clearOnLoadInputs = Array.from(document.querySelectorAll("[data-clear-on-load]"));
+const unlockOnFocusInputs = Array.from(document.querySelectorAll("[data-unlock-on-focus]"));
+
+function unlockInputElement(input) {
+  if (input instanceof HTMLInputElement && input.hasAttribute("readonly")) {
+    input.removeAttribute("readonly");
+  }
+}
+
+function clearPrefilledInputs() {
+  clearOnLoadInputs.forEach((input) => {
+    if (!(input instanceof HTMLInputElement)) {
+      return;
+    }
+
+    input.value = "";
+    input.setAttribute("value", "");
+  });
+}
 
 function setBadge(label) {
   const span = globalBadge?.querySelector("span");
@@ -293,6 +312,7 @@ passwordToggles.forEach((button) => {
   setPasswordToggleState(button, input);
 
   button.addEventListener("click", () => {
+    unlockInputElement(input);
     input.type = input.type === "password" ? "text" : "password";
     setPasswordToggleState(button, input);
     input.focus({ preventScroll: true });
@@ -300,6 +320,22 @@ passwordToggles.forEach((button) => {
     input.setSelectionRange(length, length);
   });
 });
+
+unlockOnFocusInputs.forEach((input) => {
+  if (!(input instanceof HTMLInputElement)) {
+    return;
+  }
+
+  const unlock = () => unlockInputElement(input);
+  input.addEventListener("focus", unlock, { once: true });
+  input.addEventListener("pointerdown", unlock, { once: true });
+  input.addEventListener("keydown", unlock, { once: true });
+});
+
+clearPrefilledInputs();
+window.requestAnimationFrame(clearPrefilledInputs);
+window.setTimeout(clearPrefilledInputs, 180);
+window.addEventListener("pageshow", clearPrefilledInputs);
 
 loginForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
