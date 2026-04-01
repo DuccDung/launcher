@@ -15,7 +15,14 @@ public class SmtpEmailSender(
 
     public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(_emailOptions.FromAddress))
+        var fromAddress = string.IsNullOrWhiteSpace(_emailOptions.FromAddress)
+            ? _smtpOptions.User?.Trim()
+            : _emailOptions.FromAddress.Trim();
+        var fromName = string.IsNullOrWhiteSpace(_emailOptions.FromName)
+            ? string.IsNullOrWhiteSpace(_emailOptions.BrandName) ? fromAddress : _emailOptions.BrandName.Trim()
+            : _emailOptions.FromName.Trim();
+
+        if (string.IsNullOrWhiteSpace(fromAddress))
         {
             throw new InvalidOperationException("Email sender address is not configured.");
         }
@@ -26,7 +33,7 @@ public class SmtpEmailSender(
         }
 
         var message = new MimeMessage();
-        message.From.Add(new MailboxAddress(_emailOptions.FromName, _emailOptions.FromAddress));
+        message.From.Add(new MailboxAddress(fromName, fromAddress));
         message.To.Add(MailboxAddress.Parse(to));
         message.Subject = subject;
         message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();

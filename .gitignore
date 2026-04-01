@@ -3,3 +3,4 @@ bin/
 obj/
 *.user
 *.suo
+app_server/appsettings.Local.json
