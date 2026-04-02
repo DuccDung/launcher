@@ -80,6 +80,13 @@ public sealed class AdminGameWorkspaceController(
             return ValidationProblem(ModelState);
         }
 
+        var validCategoryIds = await LoadValidCategoryIdsAsync(request.CategoryIds, cancellationToken);
+        if (validCategoryIds.Count == 0)
+        {
+            ModelState.AddModelError(nameof(request.CategoryIds), "Moi game phai chon it nhat mot category hop le.");
+            return ValidationProblem(ModelState);
+        }
+
         var timestamp = DateTime.UtcNow;
         var game = new Game
         {
@@ -95,7 +102,7 @@ public sealed class AdminGameWorkspaceController(
 
         dbContext.Games.Add(game);
         await dbContext.SaveChangesAsync(cancellationToken);
-        await SyncGameCategoriesAsync(game.GameId, request.CategoryIds, cancellationToken);
+        await SyncGameCategoriesAsync(game.GameId, validCategoryIds, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Ok(new
@@ -119,6 +126,13 @@ public sealed class AdminGameWorkspaceController(
             return NotFound(new { message = "Khong tim thay game de cap nhat." });
         }
 
+        var validCategoryIds = await LoadValidCategoryIdsAsync(request.CategoryIds, cancellationToken);
+        if (validCategoryIds.Count == 0)
+        {
+            ModelState.AddModelError(nameof(request.CategoryIds), "Moi game phai chon it nhat mot category hop le.");
+            return ValidationProblem(ModelState);
+        }
+
         game.Name = request.Name.Trim();
         game.SteamAppId = request.SteamAppId;
         game.Rating = request.Rating;
@@ -127,7 +141,7 @@ public sealed class AdminGameWorkspaceController(
         game.IsRemove = request.IsRemove;
         game.UpdatedAt = DateTime.UtcNow;
 
-        await SyncGameCategoriesAsync(game.GameId, request.CategoryIds, cancellationToken);
+        await SyncGameCategoriesAsync(game.GameId, validCategoryIds, cancellationToken);
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Ok(new { message = "Da cap nhat game." });
@@ -554,16 +568,10 @@ public sealed class AdminGameWorkspaceController(
 
     private async Task SyncGameCategoriesAsync(Guid gameId, IEnumerable<Guid> categoryIds, CancellationToken cancellationToken)
     {
-        var selectedCategoryIds = categoryIds
+        var validCategoryIds = categoryIds
             .Where(item => item != Guid.Empty)
             .Distinct()
             .ToList();
-
-        var validCategoryIds = await dbContext.Categories
-            .AsNoTracking()
-            .Where(item => selectedCategoryIds.Contains(item.CategoryId))
-            .Select(item => item.CategoryId)
-            .ToListAsync(cancellationToken);
 
         var currentLinks = await dbContext.GameCategories
             .Where(item => item.GameId == gameId)
@@ -590,6 +598,25 @@ public sealed class AdminGameWorkspaceController(
                 CreatedAt = timestamp
             });
         }
+    }
+
+    private async Task<List<Guid>> LoadValidCategoryIdsAsync(IEnumerable<Guid>? categoryIds, CancellationToken cancellationToken)
+    {
+        var selectedCategoryIds = categoryIds?
+            .Where(item => item != Guid.Empty)
+            .Distinct()
+            .ToList() ?? [];
+
+        if (selectedCategoryIds.Count == 0)
+        {
+            return [];
+        }
+
+        return await dbContext.Categories
+            .AsNoTracking()
+            .Where(item => selectedCategoryIds.Contains(item.CategoryId))
+            .Select(item => item.CategoryId)
+            .ToListAsync(cancellationToken);
     }
 
     private string GetUploadDirectory(string bucket)

@@ -6,6 +6,8 @@
     steamAppIdInput: document.getElementById("steamAppIdInput"),
     gameTitleInput: document.getElementById("gameTitleInput"),
     gameSlugInput: document.getElementById("gameSlugInput"),
+    categoryChoices: document.getElementById("gameCategoryChoices"),
+    selectedCategories: document.getElementById("gameSelectedCategories"),
     steamFetchButton: document.getElementById("steamFetchButton"),
     steamFetchStatus: document.getElementById("steamFetchStatus"),
     saveGameButton: document.getElementById("saveGameButton"),
@@ -126,6 +128,19 @@
       .replaceAll("'", "&#39;");
   }
 
+  function selectedCategoryIds() {
+    return [...elements.categoryChoices.querySelectorAll("[data-category-choice]:checked")].map((input) => input.value);
+  }
+
+  function setSelectedCategoryIds(ids) {
+    const selected = new Set(ids || []);
+    [...elements.categoryChoices.querySelectorAll("[data-category-choice]")].forEach((input) => {
+      input.checked = selected.has(input.value);
+      input.closest(".admin-choice-card")?.classList.toggle("is-selected", input.checked);
+    });
+    renderSelectedCategories();
+  }
+
   function setMessage(text, tone = "muted") {
     if (!elements.message) {
       return;
@@ -144,6 +159,48 @@
   function setFetchStatus(text, tone = "idle") {
     elements.steamFetchStatus.textContent = text;
     elements.steamFetchStatus.className = `admin-game-fetch-status is-${tone}`;
+  }
+
+  function renderSelectedCategories() {
+    const selected = [...elements.categoryChoices.querySelectorAll("[data-category-choice]:checked")].map((input) => {
+      const name = input.dataset.categoryName || input.value;
+      return `<span class="admin-soft-chip">${escapeHtml(name)}</span>`;
+    });
+
+    elements.selectedCategories.innerHTML = selected.length
+      ? selected.join("")
+      : '<span class="admin-soft-chip">Chua chon category</span>';
+  }
+
+  function renderCategoryChoices() {
+    const categories = state.bootstrap?.categories ?? [];
+    elements.categoryChoices.innerHTML = categories.length
+      ? categories
+          .map(
+            (item) => `
+              <label class="admin-choice-card">
+                <input type="checkbox" value="${escapeHtml(item.categoryId)}" data-category-choice data-category-name="${escapeHtml(
+                  item.name
+                )}" />
+                <span>${escapeHtml(item.name)}</span>
+              </label>
+            `
+          )
+          .join("")
+      : '<div class="admin-workspace-empty"><strong>Chua co category</strong><span>Hay tao category truoc khi them game.</span></div>';
+
+    [...elements.categoryChoices.querySelectorAll("[data-category-choice]")].forEach((input) => {
+      input.addEventListener("change", () => {
+        input.closest(".admin-choice-card")?.classList.toggle("is-selected", input.checked);
+        renderSelectedCategories();
+      });
+    });
+
+    if (state.detail?.game?.categoryIds?.length) {
+      setSelectedCategoryIds(state.detail.game.categoryIds);
+    } else {
+      renderSelectedCategories();
+    }
   }
 
   async function parseJson(response) {
@@ -278,7 +335,7 @@
         return true;
       }
 
-      const text = [game.name, game.slug, game.steamAppId].join(" ").toLowerCase();
+      const text = [game.name, game.slug, game.steamAppId, ...(game.categoryNames || [])].join(" ").toLowerCase();
       return text.includes(keyword);
     });
   }
@@ -319,6 +376,11 @@
                 <div class="admin-game-list-price">
                   <strong>${escapeHtml(formatMoney(game.steamPrice ?? 0))}</strong>
                   <span>${escapeHtml(formatDate(game.updatedAt))}</span>
+                </div>
+                <div class="admin-chip-row admin-game-list-meta">
+                  ${(game.categoryNames || [])
+                    .map((name) => `<span class="admin-soft-chip">${escapeHtml(name)}</span>`)
+                    .join("")}
                 </div>
                 <div class="admin-toolbar-actions admin-crud-item-actions">
                   <button class="admin-button admin-button--secondary" type="button" data-action="edit" data-record-id="${escapeHtml(game.gameId)}">
@@ -370,6 +432,7 @@
     elements.steamAppIdInput.value = game?.steamAppId ?? "";
     elements.gameTitleInput.value = game?.name ?? "";
     elements.gameSlugInput.value = game?.slug ?? "";
+    setSelectedCategoryIds(game?.categoryIds ?? []);
 
     state.steamPreview = {
       steamAppId: game?.steamAppId ?? 0,
@@ -393,6 +456,7 @@
 
   async function loadBootstrap() {
     state.bootstrap = await request("/api/admin/game-workspace/bootstrap");
+    renderCategoryChoices();
     renderStoreGameList();
   }
 
@@ -422,6 +486,7 @@
     elements.steamAppIdInput.value = "";
     elements.gameTitleInput.value = "";
     elements.gameSlugInput.value = "";
+    setSelectedCategoryIds([]);
     elements.versionStandardEnabled.checked = true;
     elements.versionStandardName.value = "Ban thuong";
     elements.versionStandardDiscount.value = "0";
@@ -483,7 +548,7 @@
       steamPrice: getBaseSteamPrice(),
       photoUrl: trim(state.steamPreview.photoUrl) || null,
       isRemove: false,
-      categoryIds: state.detail?.game?.categoryIds ?? []
+      categoryIds: selectedCategoryIds()
     };
   }
 
@@ -556,6 +621,10 @@
 
     if (!trim(gamePayload.name)) {
       throw new Error("Hay goi Steam API de lay ten game.");
+    }
+
+    if (!gamePayload.categoryIds.length) {
+      throw new Error("Moi game phai chon it nhat mot category.");
     }
 
     if (!standardPayload.enabled && !fullPayload.enabled) {

@@ -48,6 +48,48 @@
     0 0 0 1px rgba(90, 140, 255, 0.12);
 }
 
+.admin-game-category-shell {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.admin-game-category-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.admin-choice-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.18s ease;
+}
+
+.admin-choice-card:hover {
+  border-color: rgba(90, 140, 255, 0.28);
+  background: rgba(90, 140, 255, 0.08);
+  transform: translateY(-1px);
+}
+
+.admin-choice-card input {
+  margin: 0;
+}
+
+.admin-choice-card.is-selected {
+  border-color: rgba(90, 140, 255, 0.34);
+  background: rgba(90, 140, 255, 0.12);
+}
+
 .admin-workspace-choice {
   display: inline-flex;
   align-items: center;
