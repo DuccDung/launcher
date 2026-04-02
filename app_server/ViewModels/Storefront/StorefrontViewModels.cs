@@ -82,9 +82,43 @@ public sealed class ProductDetailViewModel
 
     public IReadOnlyList<ProductRequirementCardViewModel> Requirements { get; init; } = [];
 
+    public ProductArticleViewModel? Article { get; init; }
+
     public IReadOnlyList<ProductCustomerReviewViewModel> CustomerReviews { get; init; } = [];
 
     public IReadOnlyList<ProductCardViewModel> RelatedProducts { get; init; } = [];
+}
+
+public sealed class ProductArticleViewModel
+{
+    public string? Eyebrow { get; init; }
+
+    public string Title { get; init; } = string.Empty;
+
+    public string? Summary { get; init; }
+
+    public IReadOnlyList<ProductArticleBlockViewModel> Blocks { get; init; } = [];
+}
+
+public sealed class ProductArticleBlockViewModel
+{
+    public string Type { get; init; } = "paragraph";
+
+    public string? Text { get; init; }
+
+    public string? Title { get; init; }
+
+    public string? Intro { get; init; }
+
+    public IReadOnlyList<string> Items { get; init; } = [];
+
+    public string? Url { get; init; }
+
+    public string? Alt { get; init; }
+
+    public bool IsYoutube { get; init; }
+
+    public string? VideoEmbedUrl { get; init; }
 }
 
 public sealed class ProductGalleryItemViewModel

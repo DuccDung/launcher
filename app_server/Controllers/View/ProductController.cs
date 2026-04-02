@@ -18,6 +18,7 @@ public sealed class ProductController(
                 .ThenInclude(item => item.Category)
             .Include(item => item.GameVersions)
             .Include(item => item.MediaItems)
+            .Include(item => item.Articles)
             .Include(item => item.Reviews)
                 .ThenInclude(item => item.User)
                     .ThenInclude(item => item.Profile)
@@ -45,6 +46,10 @@ public sealed class ProductController(
             .Take(24)
             .ToListAsync(cancellationToken);
 
+        var article = game.Articles
+            .OrderByDescending(item => item.UpdatedAt)
+            .FirstOrDefault();
+
         var relatedProducts = relatedCandidates
             .OrderByDescending(item => item.GameCategories.Count(category => currentCategoryIds.Contains(category.CategoryId)))
             .ThenByDescending(item => item.UpdatedAt)
@@ -52,7 +57,7 @@ public sealed class ProductController(
             .Select(StorefrontViewModelFactory.ToProductCard)
             .ToArray();
 
-        var model = StorefrontViewModelFactory.ToProductDetail(game, steamData, relatedProducts);
+        var model = StorefrontViewModelFactory.ToProductDetail(game, steamData, article, relatedProducts);
         if (!string.IsNullOrWhiteSpace(slug) &&
             !string.Equals(slug, model.Slug, StringComparison.OrdinalIgnoreCase))
         {

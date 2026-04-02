@@ -34,6 +34,7 @@ public static partial class StorefrontViewModelFactory
     public static ProductDetailViewModel ToProductDetail(
         Game game,
         SteamStoreAppData steamData,
+        Article? article,
         IReadOnlyList<ProductCardViewModel> relatedProducts)
     {
         var displayName = string.IsNullOrWhiteSpace(steamData.Name) ? game.Name.Trim() : steamData.Name.Trim();
@@ -73,6 +74,7 @@ public static partial class StorefrontViewModelFactory
             EditionNote = versions.FirstOrDefault(item => item.IsActive)?.Note ?? string.Empty,
             PackageItems = BuildPackageItems(steamData),
             Requirements = requirements,
+            Article = StorefrontArticleMapper.Build(game, article),
             CustomerReviews = BuildCustomerReviews(game),
             RelatedProducts = relatedProducts
         };
