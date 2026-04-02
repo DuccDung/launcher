@@ -16,7 +16,11 @@ public static partial class StorefrontViewModelFactory
             .Select(item => item.Category?.Name)
             .FirstOrDefault(item => !string.IsNullOrWhiteSpace(item))
             ?? "Steam";
-        var discount = CalculateDiscount(game.OldPrice, game.NewPrice);
+
+        var primaryVersion = ResolvePrimaryVersion(game);
+        var currentPrice = ResolveCurrentPrice(game, primaryVersion);
+        var referencePrice = ResolveReferencePrice(game, currentPrice);
+        var discount = CalculateDiscount(referencePrice, currentPrice);
 
         return new ProductCardViewModel
         {
@@ -25,8 +29,10 @@ public static partial class StorefrontViewModelFactory
             Name = displayName,
             PosterImageUrl = ResolvePosterImage(game),
             Tag = tag,
-            NewPriceText = FormatMoney(game.NewPrice, isFree: false),
-            OldPriceText = ShouldShowOldPrice(game.OldPrice, game.NewPrice) ? FormatMoney(game.OldPrice, isFree: false) : null,
+            CurrentPriceText = FormatMoney(currentPrice, isFree: false),
+            ReferencePriceText = ShouldShowReferencePrice(referencePrice, currentPrice)
+                ? FormatMoney(referencePrice, isFree: false)
+                : null,
             DiscountText = discount.HasValue ? $"-{discount.Value}%" : null
         };
     }
@@ -34,15 +40,17 @@ public static partial class StorefrontViewModelFactory
     public static ProductDetailViewModel ToProductDetail(
         Game game,
         SteamStoreAppData steamData,
-        Article? article,
         IReadOnlyList<ProductCardViewModel> relatedProducts)
     {
         var displayName = string.IsNullOrWhiteSpace(steamData.Name) ? game.Name.Trim() : steamData.Name.Trim();
+        var primaryVersion = ResolvePrimaryVersion(game);
+        var currentPrice = ResolveCurrentPrice(game, primaryVersion);
+        var referencePrice = ResolveReferencePrice(game, currentPrice);
         var versions = BuildEditions(game, displayName);
         var facts = BuildFacts(steamData);
         var gallery = BuildGallery(game, steamData, displayName);
         var requirements = BuildRequirements(steamData);
-        var discount = CalculateDiscount(game.OldPrice, game.NewPrice);
+        var discount = CalculateDiscount(referencePrice, currentPrice);
         var ratingText = game.Rating?.ToString("0.0", CultureInfo.InvariantCulture) ?? ResolveMetacriticAsFivePointScale(steamData);
 
         return new ProductDetailViewModel
@@ -54,10 +62,12 @@ public static partial class StorefrontViewModelFactory
             PageTitle = $"{displayName} | Deluxe Gaming",
             RatingScoreText = ratingText,
             RatingCountText = BuildRatingCountText(steamData),
-            NewPriceText = FormatMoney(game.NewPrice, steamData.IsFree),
-            OldPriceText = ShouldShowOldPrice(game.OldPrice, game.NewPrice) ? FormatMoney(game.OldPrice, false) : null,
+            CurrentPriceText = FormatMoney(currentPrice, steamData.IsFree),
+            ReferencePriceText = ShouldShowReferencePrice(referencePrice, currentPrice)
+                ? FormatMoney(referencePrice, isFree: false)
+                : null,
             DiscountText = discount.HasValue ? $"-{discount.Value}%" : null,
-            StatusText = steamData.IsFree ? "Miễn phí trên Steam" : "Còn hàng",
+            StatusText = steamData.IsFree ? "Mien phi tren Steam" : "Con hang",
             CoverImageUrl = ResolveCoverImage(game, steamData),
             AgeLetter = BuildAgeLetter(steamData),
             AgeCaption = BuildAgeCaption(steamData),
@@ -74,7 +84,6 @@ public static partial class StorefrontViewModelFactory
             EditionNote = versions.FirstOrDefault(item => item.IsActive)?.Note ?? string.Empty,
             PackageItems = BuildPackageItems(steamData),
             Requirements = requirements,
-            Article = StorefrontArticleMapper.Build(game, article),
             CustomerReviews = BuildCustomerReviews(game),
             RelatedProducts = relatedProducts
         };
@@ -104,6 +113,11 @@ public static partial class StorefrontViewModelFactory
 
     public static string ResolvePosterImage(Game game)
     {
+        if (IsImageUrl(game.PhotoUrl))
+        {
+            return game.PhotoUrl!;
+        }
+
         if (game.SteamAppId is > 0)
         {
             return $"https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/{game.SteamAppId}/library_600x900_2x.jpg";
@@ -116,6 +130,37 @@ public static partial class StorefrontViewModelFactory
         return string.IsNullOrWhiteSpace(mediaImage)
             ? "https://shared.fastly.steamstatic.com/public/shared/images/responsive/share_steam_logo.png"
             : mediaImage;
+    }
+
+    private static GameVersion? ResolvePrimaryVersion(Game game)
+    {
+        return game.GameVersions
+            .Where(item => !item.IsRemoved)
+            .OrderBy(item => item.CreatedAt)
+            .ThenBy(item => item.VersionName)
+            .FirstOrDefault();
+    }
+
+    private static decimal? ResolveCurrentPrice(Game game, GameVersion? primaryVersion)
+    {
+        if (primaryVersion?.Price is >= 0)
+        {
+            return primaryVersion.Price;
+        }
+
+        return game.SteamPrice;
+    }
+
+    private static decimal? ResolveReferencePrice(Game game, decimal? currentPrice)
+    {
+        if (game.SteamPrice is > 0 &&
+            currentPrice is >= 0 &&
+            game.SteamPrice > currentPrice)
+        {
+            return game.SteamPrice;
+        }
+
+        return null;
     }
 
     private static IReadOnlyList<string> BuildTags(Game game, SteamStoreAppData steamData)
@@ -159,27 +204,27 @@ public static partial class StorefrontViewModelFactory
 
         if (!string.IsNullOrWhiteSpace(steamData.ReleaseDate?.Date))
         {
-            facts.Add(new ProductFactViewModel { Label = "Phát hành", Value = steamData.ReleaseDate.Date! });
+            facts.Add(new ProductFactViewModel { Label = "Phat hanh", Value = steamData.ReleaseDate.Date! });
         }
 
         if (!string.IsNullOrWhiteSpace(developers))
         {
-            facts.Add(new ProductFactViewModel { Label = "Phát triển", Value = developers });
+            facts.Add(new ProductFactViewModel { Label = "Phat trien", Value = developers });
         }
 
         if (!string.IsNullOrWhiteSpace(publishers))
         {
-            facts.Add(new ProductFactViewModel { Label = "Phát hành bởi", Value = publishers });
+            facts.Add(new ProductFactViewModel { Label = "Phat hanh boi", Value = publishers });
         }
 
         if (!string.IsNullOrWhiteSpace(platforms))
         {
-            facts.Add(new ProductFactViewModel { Label = "Nền tảng", Value = platforms });
+            facts.Add(new ProductFactViewModel { Label = "Nen tang", Value = platforms });
         }
 
         if (!string.IsNullOrWhiteSpace(languages))
         {
-            facts.Add(new ProductFactViewModel { Label = "Ngôn ngữ", Value = languages });
+            facts.Add(new ProductFactViewModel { Label = "Ngon ngu", Value = languages });
         }
 
         if (steamData.Metacritic?.Score is { } score)
@@ -240,7 +285,8 @@ public static partial class StorefrontViewModelFactory
             .Select((item, index) => new ProductEditionViewModel
             {
                 Name = string.IsNullOrWhiteSpace(item.VersionName) ? $"STEAM-{index + 1:D2}" : item.VersionName!.Trim().ToUpperInvariant(),
-                Note = $"Phiên bản {item.VersionName?.Trim() ?? $"#{index + 1}"} dành cho {displayName}, giữ nguyên dữ liệu mô tả và hình ảnh từ Steam.",
+                Note = BuildEditionNote(item, displayName, index + 1, game.SteamPrice),
+                PriceText = item.Price is >= 0 ? FormatMoney(item.Price, isFree: false) : null,
                 IsActive = index == 0
             })
             .ToList();
@@ -255,10 +301,26 @@ public static partial class StorefrontViewModelFactory
             new ProductEditionViewModel
             {
                 Name = "STEAM-EDITION",
-                Note = $"Phiên bản mặc định cho {displayName}, dùng toàn bộ dữ liệu hiển thị đồng bộ từ Steam.",
+                Note = $"Phien ban mac dinh cho {displayName}, dung toan bo du lieu hien thi dong bo tu Steam.",
+                PriceText = game.SteamPrice is >= 0 ? FormatMoney(game.SteamPrice, isFree: false) : null,
                 IsActive = true
             }
         ];
+    }
+
+    private static string BuildEditionNote(GameVersion version, string displayName, int editionIndex, decimal? steamPrice)
+    {
+        var editionName = string.IsNullOrWhiteSpace(version.VersionName)
+            ? $"#{editionIndex}"
+            : version.VersionName.Trim();
+
+        var priceText = version.Price is >= 0
+            ? FormatMoney(version.Price, isFree: false)
+            : steamPrice is >= 0
+                ? FormatMoney(steamPrice, isFree: false)
+                : "Lien he";
+
+        return $"Phien ban {editionName} danh cho {displayName}, gia hien hanh {priceText}. Du lieu mo ta va hinh anh duoc dong bo tu Steam.";
     }
 
     private static IReadOnlyList<string> BuildPackageItems(SteamStoreAppData steamData)
@@ -271,32 +333,32 @@ public static partial class StorefrontViewModelFactory
 
         if (!string.IsNullOrWhiteSpace(developers))
         {
-            items.Add($"Phát triển bởi {developers}.");
+            items.Add($"Phat trien boi {developers}.");
         }
 
         if (!string.IsNullOrWhiteSpace(publishers))
         {
-            items.Add($"Phát hành bởi {publishers}.");
+            items.Add($"Phat hanh boi {publishers}.");
         }
 
         if (!string.IsNullOrWhiteSpace(platforms))
         {
-            items.Add($"Hỗ trợ {platforms}.");
+            items.Add($"Ho tro {platforms}.");
         }
 
         if (!string.IsNullOrWhiteSpace(steamData.ReleaseDate?.Date))
         {
-            items.Add($"Ngày phát hành trên Steam: {steamData.ReleaseDate.Date}.");
+            items.Add($"Ngay phat hanh tren Steam: {steamData.ReleaseDate.Date}.");
         }
 
         if (!string.IsNullOrWhiteSpace(languages))
         {
-            items.Add($"Ngôn ngữ nổi bật: {languages}.");
+            items.Add($"Ngon ngu noi bat: {languages}.");
         }
 
         if (steamData.Dlc?.Count > 0)
         {
-            items.Add($"Steam ghi nhận {steamData.Dlc.Count} nội dung DLC liên quan.");
+            items.Add($"Steam ghi nhan {steamData.Dlc.Count} noi dung DLC lien quan.");
         }
 
         if (!string.IsNullOrWhiteSpace(steamData.ContentDescriptors?.Notes))
@@ -306,7 +368,7 @@ public static partial class StorefrontViewModelFactory
 
         if (items.Count == 0)
         {
-            items.Add($"Dữ liệu gói sản phẩm được đồng bộ trực tiếp từ Steam App ID {steamData.SteamAppId}.");
+            items.Add($"Du lieu goi san pham duoc dong bo truc tiep tu Steam App ID {steamData.SteamAppId}.");
         }
 
         return items.Take(6).ToArray();
@@ -361,15 +423,17 @@ public static partial class StorefrontViewModelFactory
                     displayName = item.User.Email.Split('@')[0];
                 }
 
-                displayName = string.IsNullOrWhiteSpace(displayName) ? "Người dùng" : displayName.Trim();
+                displayName = string.IsNullOrWhiteSpace(displayName) ? "Nguoi dung" : displayName.Trim();
 
                 return new ProductCustomerReviewViewModel
                 {
                     DisplayName = displayName,
                     AvatarText = displayName[0].ToString().ToUpperInvariant(),
-                    RatingText = item.Rating?.ToString("0.0", CultureInfo.InvariantCulture) ?? "—",
+                    RatingText = item.Rating?.ToString("0.0", CultureInfo.InvariantCulture) ?? "-",
                     CreatedAtText = item.CreatedAt.ToLocalTime().ToString("dd/MM/yyyy"),
-                    ReviewText = string.IsNullOrWhiteSpace(item.ReviewText) ? "Người dùng chưa để lại nội dung chi tiết." : item.ReviewText.Trim()
+                    ReviewText = string.IsNullOrWhiteSpace(item.ReviewText)
+                        ? "Nguoi dung chua de lai noi dung chi tiet."
+                        : item.ReviewText.Trim()
                 };
             })
             .ToArray();
@@ -394,42 +458,46 @@ public static partial class StorefrontViewModelFactory
     {
         if (value is > 0)
         {
-            return $"{value.Value:N0} đ";
+            return $"{value.Value:N0} VND";
         }
 
         if (isFree)
         {
-            return "Miễn phí";
+            return "Mien phi";
         }
 
         if (value == 0)
         {
-            return "0 đ";
+            return "0 VND";
         }
 
-        return "Liên hệ";
+        return "Lien he";
     }
 
-    private static bool ShouldShowOldPrice(decimal? oldPrice, decimal? newPrice)
+    private static bool ShouldShowReferencePrice(decimal? referencePrice, decimal? currentPrice)
     {
-        return oldPrice is > 0 && newPrice is >= 0 && oldPrice > newPrice;
+        return referencePrice is > 0 && currentPrice is >= 0 && referencePrice > currentPrice;
     }
 
-    private static int? CalculateDiscount(decimal? oldPrice, decimal? newPrice)
+    private static int? CalculateDiscount(decimal? referencePrice, decimal? currentPrice)
     {
-        if (oldPrice is null || newPrice is null || oldPrice <= 0 || newPrice < 0 || newPrice >= oldPrice)
+        if (referencePrice is null ||
+            currentPrice is null ||
+            referencePrice <= 0 ||
+            currentPrice < 0 ||
+            currentPrice >= referencePrice)
         {
             return null;
         }
 
-        return (int)Math.Round((oldPrice.Value - newPrice.Value) / oldPrice.Value * 100M, MidpointRounding.AwayFromZero);
+        return (int)Math.Round((referencePrice.Value - currentPrice.Value) / referencePrice.Value * 100M, MidpointRounding.AwayFromZero);
     }
 
     private static string BuildRatingCountText(SteamStoreAppData steamData)
     {
         if (steamData.Recommendations?.Total > 0)
         {
-            return $"{steamData.Recommendations.Total:N0} lượt đề xuất";
+            return $"{steamData.Recommendations.Total:N0} luot de xuat";
         }
 
         if (steamData.Metacritic?.Score is { } score)
@@ -437,14 +505,14 @@ public static partial class StorefrontViewModelFactory
             return $"Metacritic {score}/100";
         }
 
-        return "Chưa có dữ liệu đánh giá";
+        return "Chua co du lieu danh gia";
     }
 
     private static string ResolveMetacriticAsFivePointScale(SteamStoreAppData steamData)
     {
         if (steamData.Metacritic?.Score is not { } score)
         {
-            return "—";
+            return "-";
         }
 
         return (score / 20M).ToString("0.0", CultureInfo.InvariantCulture);
@@ -488,10 +556,10 @@ public static partial class StorefrontViewModelFactory
 
         if (steamData.RequiredAge > 0)
         {
-            return $"Khuyến nghị cho người chơi từ {steamData.RequiredAge} tuổi trở lên.";
+            return $"Khuyen nghi cho nguoi choi tu {steamData.RequiredAge} tuoi tro len.";
         }
 
-        return "Nội dung phù hợp với đa số người chơi theo thông tin Steam.";
+        return "Noi dung phu hop voi da so nguoi choi theo thong tin Steam.";
     }
 
     private static string? NormalizeDetailedDescription(SteamStoreAppData steamData)

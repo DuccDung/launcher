@@ -56,11 +56,11 @@
                                         {
                                             <span class="aaa-game-discount">@game.DiscountText</span>
                                         }
-                                        @if (!string.IsNullOrWhiteSpace(game.OldPriceText))
+                                        @if (!string.IsNullOrWhiteSpace(game.ReferencePriceText))
                                         {
-                                            <span class="aaa-game-old-price">@game.OldPriceText</span>
+                                            <span class="aaa-game-old-price">@game.ReferencePriceText</span>
                                         }
-                                        <strong class="aaa-game-new-price">@game.NewPriceText</strong>
+                                        <strong class="aaa-game-new-price">@game.CurrentPriceText</strong>
                                     </div>
                                 </div>
                             </a>

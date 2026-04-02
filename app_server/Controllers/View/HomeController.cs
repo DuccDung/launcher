@@ -17,7 +17,9 @@ public sealed class HomeController(LauncherDbContext dbContext, ILogger<HomeCont
             .Include(item => item.GameCategories)
                 .ThenInclude(item => item.Category)
             .Include(item => item.MediaItems)
-            .Where(item => item.SteamAppId != null &&
+            .Include(item => item.GameVersions)
+            .Where(item => !item.IsRemove &&
+                           item.SteamAppId != null &&
                            (keyword == null ||
                             item.Name.Contains(keyword) ||
                             item.GameCategories.Any(category => category.Category != null && category.Category.Name.Contains(keyword))))

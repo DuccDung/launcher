@@ -6,7 +6,6 @@
     Layout = "~/Views/Shared/_StorefrontLayout.cshtml";
     var firstGallery = Model.Gallery.FirstOrDefault();
     var ratingValue = 0M;
-    var hasArticle = Model.Article is not null;
     var windowsRequirement = Model.Requirements.FirstOrDefault(item => item.Platform.Contains("win", StringComparison.OrdinalIgnoreCase));
     decimal.TryParse(Model.RatingScoreText, NumberStyles.Any, CultureInfo.InvariantCulture, out ratingValue);
 }
@@ -150,10 +149,10 @@
                         }
 
                         <div class="product-summary-price-row">
-                            <strong class="product-summary-new-price">@Model.NewPriceText</strong>
-                            @if (!string.IsNullOrWhiteSpace(Model.OldPriceText))
+                            <strong class="product-summary-new-price">@Model.CurrentPriceText</strong>
+                            @if (!string.IsNullOrWhiteSpace(Model.ReferencePriceText))
                             {
-                                <span class="product-summary-old-price">@Model.OldPriceText</span>
+                                <span class="product-summary-old-price">@Model.ReferencePriceText</span>
                             }
                             @if (!string.IsNullOrWhiteSpace(Model.DiscountText))
                             {
@@ -175,6 +174,10 @@
                                             data-edition-note="@edition.Note"
                                             aria-pressed="@(edition.IsActive ? "true" : "false")">
                                         @edition.Name
+                                        @if (!string.IsNullOrWhiteSpace(edition.PriceText))
+                                        {
+                                            <text> - @edition.PriceText</text>
+                                        }
                                     </button>
                                 }
                             </div>
@@ -199,95 +202,10 @@
     <section class="product-media-specs-section" aria-labelledby="productOverviewTitle">
         <div class="container">
             <div class="storefront-detail-stack storefront-detail-stack--wide">
-                @if (Model.Article is not null)
-                {
-                    <article class="product-package-card storefront-rich-card storefront-article-card">
-                        @if (!string.IsNullOrWhiteSpace(Model.Article.Eyebrow))
-                        {
-                            <span class="storefront-article-eyebrow">@Model.Article.Eyebrow</span>
-                        }
-
-                        <h2 id="productOverviewTitle" class="product-package-title storefront-article-title">@Model.Article.Title</h2>
-
-                        @if (!string.IsNullOrWhiteSpace(Model.Article.Summary))
-                        {
-                            <p class="storefront-article-summary">@Model.Article.Summary</p>
-                        }
-
-                        @if (Model.Article.Blocks.Count > 0)
-                        {
-                            <div class="storefront-article-body">
-                                @foreach (var block in Model.Article.Blocks)
-                                {
-                                    switch (block.Type)
-                                    {
-                                        case "heading":
-                                            <h3 class="storefront-article-heading">@block.Text</h3>
-                                            break;
-                                        case "paragraph":
-                                            <p class="storefront-article-paragraph">@block.Text</p>
-                                            break;
-                                        case "quote":
-                                            <blockquote class="storefront-article-quote">@block.Text</blockquote>
-                                            break;
-                                        case "image":
-                                            <figure class="storefront-article-figure">
-                                                <img src="@block.Url" alt="@(block.Alt ?? Model.Article.Title)" class="storefront-article-image" loading="lazy" />
-                                                @if (!string.IsNullOrWhiteSpace(block.Alt))
-                                                {
-                                                    <figcaption>@block.Alt</figcaption>
-                                                }
-                                            </figure>
-                                            break;
-                                        case "video":
-                                            <div class="storefront-article-video">
-                                                @if (block.IsYoutube && !string.IsNullOrWhiteSpace(block.VideoEmbedUrl))
-                                                {
-                                                    <iframe src="@block.VideoEmbedUrl"
-                                                            title="@(block.Title ?? Model.Article.Title)"
-                                                            loading="lazy"
-                                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                            referrerpolicy="strict-origin-when-cross-origin"
-                                                            allowfullscreen></iframe>
-                                                }
-                                                else if (!string.IsNullOrWhiteSpace(block.Url))
-                                                {
-                                                    <video controls preload="metadata" src="@block.Url"></video>
-                                                }
-                                                @if (!string.IsNullOrWhiteSpace(block.Title))
-                                                {
-                                                    <p class="storefront-article-video-title">@block.Title</p>
-                                                }
-                                            </div>
-                                            break;
-                                        case "list":
-                                            <div class="storefront-article-list">
-                                                @if (!string.IsNullOrWhiteSpace(block.Intro))
-                                                {
-                                                    <p class="storefront-article-paragraph">@block.Intro</p>
-                                                }
-                                                @if (block.Items.Count > 0)
-                                                {
-                                                    <ul>
-                                                        @foreach (var item in block.Items)
-                                                        {
-                                                            <li>@item</li>
-                                                        }
-                                                    </ul>
-                                                }
-                                            </div>
-                                            break;
-                                    }
-                                }
-                            </div>
-                        }
-                    </article>
-                }
-
                 @if (!string.IsNullOrWhiteSpace(Model.AboutTheGameHtml))
                 {
                     <article class="product-package-card storefront-rich-card">
-                        <h2 id="@(hasArticle ? null : "productOverviewTitle")" class="product-package-title">Tổng quan game</h2>
+                        <h2 id="productOverviewTitle" class="product-package-title">Tổng quan game</h2>
                         <div class="storefront-html-content">
                             @Html.Raw(Model.AboutTheGameHtml)
                         </div>
@@ -425,18 +343,18 @@
                                             <span class="aaa-game-tag">@game.Tag</span>
                                             <h3 class="aaa-game-name">@game.Name</h3>
                                             <div class="aaa-game-price-row">
-                                                @if (!string.IsNullOrWhiteSpace(game.DiscountText))
-                                                {
-                                                    <span class="aaa-game-discount">@game.DiscountText</span>
-                                                }
-                                                @if (!string.IsNullOrWhiteSpace(game.OldPriceText))
-                                                {
-                                                    <span class="aaa-game-old-price">@game.OldPriceText</span>
-                                                }
-                                                <strong class="aaa-game-new-price">@game.NewPriceText</strong>
-                                            </div>
-                                        </div>
-                                    </a>
+                                        @if (!string.IsNullOrWhiteSpace(game.DiscountText))
+                                        {
+                                            <span class="aaa-game-discount">@game.DiscountText</span>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(game.ReferencePriceText))
+                                        {
+                                            <span class="aaa-game-old-price">@game.ReferencePriceText</span>
+                                        }
+                                        <strong class="aaa-game-new-price">@game.CurrentPriceText</strong>
+                                    </div>
+                                </div>
+                            </a>
                                 </article>
                             }
                         </div>

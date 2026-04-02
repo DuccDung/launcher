@@ -18,11 +18,10 @@ public sealed class ProductController(
                 .ThenInclude(item => item.Category)
             .Include(item => item.GameVersions)
             .Include(item => item.MediaItems)
-            .Include(item => item.Articles)
             .Include(item => item.Reviews)
                 .ThenInclude(item => item.User)
                     .ThenInclude(item => item.Profile)
-            .SingleOrDefaultAsync(item => item.GameId == gameId, cancellationToken);
+            .SingleOrDefaultAsync(item => item.GameId == gameId && !item.IsRemove, cancellationToken);
 
         if (game is null || game.SteamAppId is null or <= 0)
         {
@@ -41,14 +40,13 @@ public sealed class ProductController(
             .Include(item => item.GameCategories)
                 .ThenInclude(item => item.Category)
             .Include(item => item.MediaItems)
-            .Where(item => item.GameId != gameId && item.SteamAppId != null)
+            .Include(item => item.GameVersions)
+            .Where(item => item.GameId != gameId &&
+                           !item.IsRemove &&
+                           item.SteamAppId != null)
             .OrderByDescending(item => item.UpdatedAt)
             .Take(24)
             .ToListAsync(cancellationToken);
-
-        var article = game.Articles
-            .OrderByDescending(item => item.UpdatedAt)
-            .FirstOrDefault();
 
         var relatedProducts = relatedCandidates
             .OrderByDescending(item => item.GameCategories.Count(category => currentCategoryIds.Contains(category.CategoryId)))
@@ -57,7 +55,7 @@ public sealed class ProductController(
             .Select(StorefrontViewModelFactory.ToProductCard)
             .ToArray();
 
-        var model = StorefrontViewModelFactory.ToProductDetail(game, steamData, article, relatedProducts);
+        var model = StorefrontViewModelFactory.ToProductDetail(game, steamData, relatedProducts);
         if (!string.IsNullOrWhiteSpace(slug) &&
             !string.Equals(slug, model.Slug, StringComparison.OrdinalIgnoreCase))
         {

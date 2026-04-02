@@ -21,7 +21,7 @@ public sealed class SteamStoreService(HttpClient httpClient, IMemoryCache memory
         }
 
         var payload = await httpClient.GetFromJsonAsync<Dictionary<string, SteamStoreAppLookupResponse>>(
-            $"api/appdetails?appids={steamAppId}",
+            $"api/appdetails?appids={steamAppId}&cc=vn&l=vietnamese",
             cancellationToken);
 
         if (payload is null ||

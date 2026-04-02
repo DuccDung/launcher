@@ -2,564 +2,198 @@
     Layout = "~/Views/Admin/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Game Workspace | NestG";
     ViewData["AdminNav"] = "games-workspace";
-    ViewData["AdminBodyClass"] = "admin-crud-page admin-game-lab-page";
-    ViewData["AdminHeaderTitle"] = "Game workspace theo model thật";
-    ViewData["AdminHeaderSubtitle"] = "Game, version, account, file, media và article trên cùng một luồng quản trị.";
-    ViewData["AdminSearchPlaceholder"] = "Tìm game theo tên hoặc slug preview...";
-}
-
-@section Styles {
-  <link rel="stylesheet" href="~/css/admin-game-workspace.css" asp-append-version="true" />
+    ViewData["AdminBodyClass"] = "admin-crud-page admin-game-workspace-page";
+    ViewData["AdminHeaderTitle"] = "Game Workspace";
+    ViewData["AdminHeaderSubtitle"] = "Steam import va CRUD store";
+    ViewData["AdminSearchPlaceholder"] = "Tim game theo ten hoac steam app id...";
 }
 
 <div class="admin-game-workspace-page" data-game-workspace>
   <section class="admin-page-intro">
     <div>
-      <h1>Workspace quản lý game toàn diện</h1>
-      <p>
-        Trang này được cắt lại từ giao diện <span class="admin-font-mono">admin_game_workspace</span>
-        trong thư mục UI và nối vào hệ thống admin thật. Các trường tự sinh như ID, thời gian tạo
-        và cập nhật đã bỏ khỏi form để thao tác gọn hơn.
-      </p>
-    </div>
-
-    <div class="admin-page-intro__actions">
-      <button class="admin-button admin-button--secondary" type="button" id="workspace-new-game">
-        <i class="bi bi-plus-square"></i>
-        Game trống
-      </button>
-      <button class="admin-button admin-button--primary" type="button" id="workspace-refresh-all">
-        <i class="bi bi-arrow-clockwise"></i>
-        Tải lại dữ liệu
-      </button>
+      <h1>CRUD game theo Steam App ID</h1>
+      <p>Lay thong tin game tu Steam, tinh gia ban va quan ly game trong store.</p>
     </div>
   </section>
 
-  <section class="admin-crud-overview" data-workspace-stats></section>
-
   <section class="admin-builder-grid admin-builder-grid--crud admin-game-workspace-grid">
-    <article class="admin-panel admin-crud-panel admin-crud-panel--form admin-workspace-panel" data-workspace-panel="game">
+    <article class="admin-panel admin-crud-panel admin-crud-panel--form">
       <div class="admin-panel__head">
         <div>
-          <h2 class="admin-panel__title">Game master form</h2>
-          <span class="admin-panel__subtitle">
-            Tạo hoặc cập nhật bảng <code>games</code>, đồng thời gắn category cho
-            <code>game_categories</code>.
-          </span>
+          <h2 class="admin-panel__title">Thong tin game</h2>
+          <span class="admin-panel__subtitle">Nhap app id, lay du lieu va luu vao store.</span>
         </div>
-        <span class="admin-panel__pill">games</span>
+        <span class="admin-panel__pill">steam</span>
       </div>
 
-      <div class="admin-game-note">
-        <strong>Flow đề xuất:</strong> chọn hoặc tạo game trước, sau đó thêm version,
-        account, file, media và cuối cùng hoàn thiện article JSON.
-      </div>
+      <p class="admin-category-feedback" id="workspaceMessage" hidden></p>
 
-      <p class="admin-category-feedback" data-workspace-message hidden></p>
-
-      <div class="admin-form-grid admin-game-form-grid">
-        <div class="admin-field">
-          <label for="game-name">Tên game</label>
-          <input id="game-name" type="text" placeholder="Ví dụ: Black Myth: Wukong" required />
-        </div>
-        <div class="admin-field">
-          <label for="game-steam-app-id">Steam App ID</label>
-          <input id="game-steam-app-id" type="number" min="1" step="1" placeholder="Ví dụ: 570" />
-        </div>
-        <div class="admin-field">
-          <label for="game-rating">Rating</label>
-          <input id="game-rating" type="number" min="0" max="5" step="0.01" required />
-        </div>
-        <div class="admin-field">
-          <label for="game-old-price">Giá cũ</label>
-          <input id="game-old-price" type="number" min="0" step="1000" required />
-        </div>
-        <div class="admin-field">
-          <label for="game-new-price">Giá mới</label>
-          <input id="game-new-price" type="number" min="0" step="1000" required />
-        </div>
-        <div class="admin-field admin-field--full">
-          <label for="game-slug-preview">Slug preview</label>
-          <input id="game-slug-preview" type="text" readonly />
-        </div>
-      </div>
-
-      <div class="admin-game-category-shell">
-        <div class="admin-record-footer">
-          <div>
-            <strong>Game categories</strong>
-            <span class="admin-panel__subtitle">
-              Bật hoặc tắt category để đồng bộ relation cho game đang chọn.
-            </span>
+      <div class="admin-game-fetch-shell">
+        <div class="admin-game-fetch-row">
+          <div class="admin-field">
+            <label for="steamAppIdInput">Steam App ID</label>
+            <input id="steamAppIdInput" type="text" inputmode="numeric" placeholder="Vi du: 1245620" />
           </div>
         </div>
-        <div class="admin-game-category-grid" data-category-choices></div>
-        <div class="admin-pill-list admin-selected-pills" data-selected-categories></div>
+
+        <div class="admin-game-fetch-actions">
+          <button class="admin-button admin-button--primary" type="button" id="steamFetchButton">
+            <i class="bi bi-search"></i>
+            Goi Steam API
+          </button>
+          <div class="admin-game-fetch-status is-idle" id="steamFetchStatus" role="status" aria-live="polite">
+            Chua lay du lieu tu Steam.
+          </div>
+        </div>
       </div>
+
+      <article class="admin-game-steam-preview">
+        <div class="admin-game-steam-preview__image">
+          <img id="steamPreviewImage" src="~/admin-ui/assets/img/g_item_02.png" alt="Steam preview" />
+        </div>
+
+        <div class="admin-game-steam-preview__body">
+          <div class="admin-game-steam-preview__head">
+            <div>
+              <span class="admin-record-card__eyebrow" id="steamPreviewStatus">Steam</span>
+              <h3 class="admin-record-card__title" id="steamPreviewTitle">Chua co game</h3>
+              <span class="admin-record-card__sub" id="steamPreviewMeta">Nhap app id de lay du lieu.</span>
+            </div>
+          </div>
+
+          <div class="admin-chip-row admin-selected-pills" id="steamPreviewTags">
+            <span class="admin-soft-chip">Tags</span>
+          </div>
+        </div>
+      </article>
+
+      <div class="admin-form-grid">
+        <div class="admin-field">
+          <label for="gameTitleInput">Ten game</label>
+          <input id="gameTitleInput" type="text" placeholder="Tu dong dien tu Steam" readonly />
+        </div>
+        <div class="admin-field">
+          <label for="gameSlugInput">Slug</label>
+          <input id="gameSlugInput" type="text" placeholder="auto-slug" readonly />
+        </div>
+      </div>
+
+      <section class="admin-game-price-grid">
+        <div class="admin-game-price-card">
+          <span>Gia Steam goc</span>
+          <strong id="steamOriginalPrice">0 VND</strong>
+          <small id="steamOriginalPriceNote">Chua co du lieu</small>
+        </div>
+        <div class="admin-game-price-card">
+          <span>Gia Steam hien tai</span>
+          <strong id="steamSalePrice">0 VND</strong>
+          <small id="steamSalePriceNote">Theo region VN</small>
+        </div>
+        <div class="admin-game-price-card">
+          <span>Giam gia ban thuong</span>
+          <strong id="storeDiscountPreview">0%</strong>
+          <small>Ban thuong</small>
+        </div>
+        <div class="admin-game-price-card">
+          <span>Gia ban thuong</span>
+          <strong id="storeFinalPrice">0 VND</strong>
+          <small id="storeFinalPriceNote">Sau giam gia</small>
+        </div>
+      </section>
+
+      <section class="admin-section-stack">
+        <div class="admin-panel__head admin-panel__head--compact">
+          <div>
+            <h2 class="admin-panel__title">Version</h2>
+            <span class="admin-panel__subtitle">Ban thuong va ban full DLC.</span>
+          </div>
+          <span class="admin-panel__pill">2 version</span>
+        </div>
+
+        <div class="admin-version-list admin-game-version-list">
+          <article class="admin-version-card admin-game-version-card">
+            <div class="admin-game-version-card__head">
+              <label class="admin-game-version-toggle">
+                <input id="versionStandardEnabled" type="checkbox" checked />
+                <span>Ban thuong</span>
+              </label>
+              <span class="admin-status is-ok">Standard</span>
+            </div>
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="versionStandardName">Ten version</label>
+                <input id="versionStandardName" type="text" value="Ban thuong" />
+              </div>
+              <div class="admin-field">
+                <label for="versionStandardDiscount">Giam gia (%)</label>
+                <input id="versionStandardDiscount" type="number" min="0" max="100" value="0" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="versionStandardPrice">Gia ban</label>
+                <input id="versionStandardPrice" type="text" inputmode="numeric" placeholder="Tu dong tinh theo VND" />
+              </div>
+            </div>
+          </article>
+
+          <article class="admin-version-card admin-game-version-card">
+            <div class="admin-game-version-card__head">
+              <label class="admin-game-version-toggle">
+                <input id="versionFullEnabled" type="checkbox" checked />
+                <span>Ban full DLC</span>
+              </label>
+              <span class="admin-status is-check">Full DLC</span>
+            </div>
+            <div class="admin-form-grid">
+              <div class="admin-field">
+                <label for="versionFullName">Ten version</label>
+                <input id="versionFullName" type="text" value="Ban full DLC" />
+              </div>
+              <div class="admin-field">
+                <label for="versionFullDiscount">Giam gia (%)</label>
+                <input id="versionFullDiscount" type="number" min="0" max="100" value="0" />
+              </div>
+              <div class="admin-field admin-field--full">
+                <label for="versionFullPrice">Gia ban</label>
+                <input id="versionFullPrice" type="text" inputmode="numeric" placeholder="Nhap gia ban DLC" />
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
 
       <div class="admin-toolbar-actions admin-crud-actions">
-        <button class="admin-button admin-button--primary" type="button" id="game-create">
+        <button class="admin-button admin-button--primary" type="button" id="saveGameButton">
           <i class="bi bi-plus-circle"></i>
-          Tạo game
+          Them
         </button>
-        <button class="admin-button admin-button--secondary" type="button" id="game-update">
-          <i class="bi bi-pencil-square"></i>
-          Cập nhật
+        <button class="admin-button admin-button--secondary" type="button" id="resetFormButton">
+          <i class="bi bi-arrow-clockwise"></i>
+          Lam moi
         </button>
-        <button class="admin-button admin-button--danger" type="button" id="game-delete">
+        <button class="admin-button admin-button--danger" type="button" id="deleteGameButton">
           <i class="bi bi-trash3"></i>
-          Xóa game
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="game-reset-form">
-          <i class="bi bi-eraser"></i>
-          Làm mới form
+          Xoa
         </button>
       </div>
-
-      <div class="admin-crud-summary-grid" data-game-summary></div>
     </article>
 
-    <aside class="admin-panel admin-crud-panel admin-crud-panel--list admin-workspace-panel" data-workspace-panel="game-list">
+    <aside class="admin-panel admin-crud-panel admin-crud-panel--list">
       <div class="admin-panel__head">
         <div>
-          <h2 class="admin-panel__title">Danh sách game</h2>
-          <span class="admin-panel__subtitle">
-            Chọn game để mở đúng version, file, media và article của game đó.
-          </span>
+          <h2 class="admin-panel__title">Game trong store</h2>
+          <span class="admin-panel__subtitle">Danh sach game da them.</span>
         </div>
-        <span class="admin-panel__pill" data-game-count-pill>0 record</span>
+        <span class="admin-panel__pill" id="storeListPill">0 record</span>
       </div>
 
       <div class="admin-crud-filter-row">
         <div class="admin-field">
-          <label for="game-list-search">Từ khóa</label>
-          <input id="game-list-search" type="search" placeholder="Tên game hoặc slug..." />
-        </div>
-        <div class="admin-field">
-          <label for="game-list-category-filter">Lọc category</label>
-          <select id="game-list-category-filter">
-            <option value="">Tất cả</option>
-          </select>
+          <label for="storeKeywordInput">Tim game</label>
+          <input id="storeKeywordInput" type="search" placeholder="Ten game, slug hoac steam_app_id..." />
         </div>
       </div>
 
-      <div class="admin-mini-stack admin-list-scroll admin-crud-list" data-game-list></div>
-    </aside>
-  </section>
-
-  <section class="admin-grid admin-grid--bottom admin-workspace-entity-grid">
-    <article class="admin-panel admin-game-entity-panel admin-workspace-panel" data-workspace-panel="version">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Version game</h2>
-          <span class="admin-panel__subtitle">Version bám theo game đang chọn.</span>
-        </div>
-        <span class="admin-panel__pill" data-version-count-label>0 record</span>
-      </div>
-
-      <div class="admin-entity-note" data-current-game-context>
-        Hãy chọn game trước khi thao tác version.
-      </div>
-
-      <div class="admin-form-grid admin-compact-grid">
-        <div class="admin-field admin-field--full">
-          <label for="version-name">Version name</label>
-          <input id="version-name" type="text" maxlength="255" required placeholder="Ví dụ: Deluxe Edition, v1.0.1..." />
-        </div>
-        <div class="admin-field">
-          <label for="version-account-summary">Accounts</label>
-          <input id="version-account-summary" type="text" readonly value="Gắn account ở Kho account" />
-        </div>
-        <div class="admin-field">
-          <label for="version-is-removed">IsRemoved</label>
-          <select id="version-is-removed">
-            <option value="false">false</option>
-            <option value="true">true</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="admin-toolbar-actions admin-crud-actions">
-        <button class="admin-button admin-button--primary" type="button" id="version-create">
-          <i class="bi bi-plus-circle"></i>
-          Tạo
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="version-update">
-          <i class="bi bi-pencil-square"></i>
-          Cập nhật
-        </button>
-        <button class="admin-button admin-button--danger" type="button" id="version-delete">
-          <i class="bi bi-trash3"></i>
-          Xóa
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="version-reset">
-          <i class="bi bi-eraser"></i>
-          Reset
-        </button>
-      </div>
-
-      <div class="admin-mini-stack admin-list-scroll admin-game-entity-list" data-version-list></div>
-    </article>
-
-    <article class="admin-panel admin-game-entity-panel admin-workspace-panel" data-workspace-panel="account">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Kho account</h2>
-          <span class="admin-panel__subtitle">Account là kho toàn cục, version sẽ chọn từ đây.</span>
-        </div>
-        <span class="admin-panel__pill" data-account-count-label>0 record</span>
-      </div>
-
-      <div class="admin-form-grid admin-compact-grid">
-        <div class="admin-field admin-field--full">
-          <label for="account-version-id">Version</label>
-          <select id="account-version-id"></select>
-        </div>
-        <div class="admin-field admin-field--full">
-          <label for="account-is-active">IsActive</label>
-          <select id="account-is-active">
-            <option value="true">true</option>
-            <option value="false">false</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="admin-toolbar-actions admin-crud-actions">
-        <button class="admin-button admin-button--primary" type="button" id="account-create">
-          <i class="bi bi-plus-circle"></i>
-          Tạo
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="account-update">
-          <i class="bi bi-pencil-square"></i>
-          Cập nhật
-        </button>
-        <button class="admin-button admin-button--danger" type="button" id="account-delete">
-          <i class="bi bi-trash3"></i>
-          Xóa
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="account-reset">
-          <i class="bi bi-eraser"></i>
-          Reset
-        </button>
-      </div>
-
-      <div class="admin-mini-stack admin-list-scroll admin-game-entity-list" data-account-list></div>
-    </article>
-  </section>
-
-  <section class="admin-grid admin-grid--bottom admin-workspace-entity-grid">
-    <article class="admin-panel admin-game-entity-panel admin-panel--span-2 admin-workspace-panel" data-workspace-panel="file">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">File package theo account</h2>
-          <span class="admin-panel__subtitle">
-            Chọn file local để upload nhanh vào từng URL package.
-          </span>
-        </div>
-        <span class="admin-panel__pill" data-file-count-label>0 record</span>
-      </div>
-
-      <div class="admin-entity-note" data-file-context>
-        Chọn game rồi gắn account vào version trước khi thao tác file package.
-      </div>
-
-      <div class="admin-builder-grid admin-game-entity-grid">
-        <div class="admin-game-entity-form">
-          <div class="admin-form-grid admin-compact-grid">
-            <div class="admin-field">
-              <label for="file-account-id">Account</label>
-              <select id="file-account-id"></select>
-            </div>
-            <div class="admin-field">
-              <label for="file-type">FileType</label>
-              <input id="file-type" type="text" placeholder="installer / patch / dlc" />
-            </div>
-            <div class="admin-field">
-              <label for="file-is-active">IsActive</label>
-              <select id="file-is-active">
-                <option value="true">true</option>
-                <option value="false">false</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="admin-upload-stack">
-            @for (var index = 1; index <= 5; index++)
-            {
-              <div class="admin-upload-row">
-                <div class="admin-field admin-field--full">
-                  <label for="file-url-@index">FileUrl0@index</label>
-                  <input id="file-url-@index" type="url" placeholder="https://..." />
-                </div>
-                <button class="admin-button admin-button--secondary" type="button" data-file-upload="@index">
-                  <i class="bi bi-upload"></i>
-                  Chọn file
-                </button>
-              </div>
-            }
-          </div>
-
-          <div class="admin-toolbar-actions admin-crud-actions">
-            <button class="admin-button admin-button--primary" type="button" id="file-create">
-              <i class="bi bi-plus-circle"></i>
-              Tạo file
-            </button>
-            <button class="admin-button admin-button--secondary" type="button" id="file-update">
-              <i class="bi bi-pencil-square"></i>
-              Cập nhật
-            </button>
-            <button class="admin-button admin-button--danger" type="button" id="file-delete">
-              <i class="bi bi-trash3"></i>
-              Xóa
-            </button>
-            <button class="admin-button admin-button--secondary" type="button" id="file-reset">
-              <i class="bi bi-eraser"></i>
-              Reset
-            </button>
-          </div>
-        </div>
-
-        <div>
-          <div class="admin-mini-stack admin-list-scroll admin-game-entity-list" data-file-list></div>
-        </div>
-      </div>
-    </article>
-
-    <article class="admin-panel admin-game-entity-panel admin-workspace-panel" data-workspace-panel="media">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Media của game</h2>
-          <span class="admin-panel__subtitle">Upload ảnh hoặc video local cho game đang chọn.</span>
-        </div>
-        <span class="admin-panel__pill" data-media-count-label>0 record</span>
-      </div>
-
-      <div class="admin-entity-note" data-media-context>
-        Chọn game trước khi thêm media cho gallery hoặc trailer.
-      </div>
-
-      <div class="admin-form-grid admin-compact-grid">
-        <div class="admin-field">
-          <label for="media-type">MediaType</label>
-          <input id="media-type" type="text" placeholder="cover / gallery / trailer" />
-        </div>
-        <div class="admin-field admin-field--full">
-          <label for="media-url">Url</label>
-          <input id="media-url" type="url" placeholder="https://..." />
-        </div>
-      </div>
-
-      <div class="admin-inline-action-row">
-        <button class="admin-button admin-button--secondary" type="button" id="media-upload-local">
-          <i class="bi bi-image"></i>
-          Chọn media local
-        </button>
-      </div>
-
-      <div class="admin-toolbar-actions admin-crud-actions">
-        <button class="admin-button admin-button--primary" type="button" id="media-create">
-          <i class="bi bi-plus-circle"></i>
-          Tạo media
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="media-update">
-          <i class="bi bi-pencil-square"></i>
-          Cập nhật
-        </button>
-        <button class="admin-button admin-button--danger" type="button" id="media-delete">
-          <i class="bi bi-trash3"></i>
-          Xóa
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="media-reset">
-          <i class="bi bi-eraser"></i>
-          Reset
-        </button>
-      </div>
-
-      <div class="admin-mini-stack admin-list-scroll admin-game-entity-list" data-media-list></div>
-    </article>
-  </section>
-
-  <section class="admin-builder-grid admin-game-article-grid">
-    <article class="admin-panel admin-crud-panel admin-crud-panel--form admin-workspace-panel" data-workspace-panel="article">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Builder article JSON</h2>
-          <span class="admin-panel__subtitle">
-            User thao tác bằng box nội dung, hệ thống tự sinh <code>content_json</code>.
-          </span>
-        </div>
-        <span class="admin-panel__pill" data-article-state-pill>preview</span>
-      </div>
-
-      <div class="admin-entity-note" data-article-context>
-        Chọn game trước khi biên tập article JSON.
-      </div>
-
-      <div class="admin-form-grid">
-        <div class="admin-field">
-          <label for="article-eyebrow">Eyebrow</label>
-          <input id="article-eyebrow" type="text" placeholder="Ví dụ: Black Myth Special" />
-        </div>
-        <div class="admin-field">
-          <label for="article-title">Tiêu đề</label>
-          <input id="article-title" type="text" placeholder="Nhập tiêu đề chính của bài viết" />
-        </div>
-        <div class="admin-field admin-field--full">
-          <label for="article-summary">Mô tả mở đầu</label>
-          <textarea id="article-summary" placeholder="Đoạn giới thiệu ngắn cho bài article."></textarea>
-        </div>
-      </div>
-
-      <div class="admin-article-builder-grid">
-        <section class="admin-article-builder-card">
-          <div class="admin-article-builder-card__head">
-            <div>
-              <strong>Thêm box nội dung</strong>
-              <span>Chọn loại box để thêm vào bài article.</span>
-            </div>
-          </div>
-
-          <div class="admin-article-type-grid">
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="paragraph"><i class="bi bi-text-paragraph"></i>Đoạn văn</button>
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="heading"><i class="bi bi-type-h2"></i>Tiêu đề phụ</button>
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="image"><i class="bi bi-image"></i>Hình ảnh</button>
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="video"><i class="bi bi-play-btn"></i>Video</button>
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="list"><i class="bi bi-list-ul"></i>Danh sách</button>
-            <button class="admin-button admin-button--secondary" type="button" data-article-add-block="quote"><i class="bi bi-quote"></i>Trích dẫn</button>
-          </div>
-        </section>
-
-        <section class="admin-article-builder-card admin-article-builder-card--wide">
-          <div class="admin-article-builder-card__head">
-            <div>
-              <strong>Danh sách box</strong>
-              <span>Chọn box để sửa, sắp xếp hoặc xóa.</span>
-            </div>
-            <span class="admin-panel__pill" data-article-block-count>0 box</span>
-          </div>
-
-          <div class="admin-mini-stack admin-list-scroll admin-article-block-list" data-article-block-list></div>
-        </section>
-
-        <section class="admin-article-builder-card admin-article-builder-card--editor admin-article-builder-card--wide">
-          <div class="admin-article-builder-card__head">
-            <div>
-              <strong>Trình chỉnh box</strong>
-              <span>Chọn box ở danh sách bên trái để sửa nội dung.</span>
-            </div>
-          </div>
-
-          <div class="admin-article-editor-shell">
-            <div class="admin-article-editor-empty" data-article-editor-empty>
-              Hãy thêm hoặc chọn một box để bắt đầu chỉnh nội dung.
-            </div>
-
-            <div class="admin-field">
-              <label for="article-block-type">Loại box</label>
-              <select id="article-block-type">
-                <option value="paragraph">Đoạn văn</option>
-                <option value="heading">Tiêu đề phụ</option>
-                <option value="image">Hình ảnh</option>
-                <option value="video">Video</option>
-                <option value="list">Danh sách</option>
-                <option value="quote">Trích dẫn</option>
-              </select>
-            </div>
-
-            <div class="admin-field admin-article-editor-group" data-article-editor-group="title">
-              <label for="article-block-title">Tiêu đề hiển thị</label>
-              <input id="article-block-title" type="text" placeholder="Ví dụ: Trailer ra mắt" />
-            </div>
-
-            <div class="admin-field admin-field--full admin-article-editor-group" data-article-editor-group="text">
-              <label for="article-block-text">Nội dung chữ</label>
-              <textarea id="article-block-text" placeholder="Nhập nội dung cho box đang chọn..."></textarea>
-            </div>
-
-            <div class="admin-field admin-field--full admin-article-editor-group" data-article-editor-group="intro">
-              <label for="article-block-intro">Câu dẫn trước danh sách</label>
-              <textarea id="article-block-intro" placeholder="Ví dụ: Gameplay nổi bật gồm:"></textarea>
-            </div>
-
-            <div class="admin-field admin-field--full admin-article-editor-group" data-article-editor-group="items">
-              <label for="article-block-items">Mỗi dòng là một ý</label>
-              <textarea id="article-block-items" placeholder="Mỗi dòng là một bullet riêng"></textarea>
-            </div>
-
-            <div class="admin-field admin-article-editor-group" data-article-editor-group="url">
-              <label for="article-block-url">Link ảnh hoặc video</label>
-              <input id="article-block-url" type="url" placeholder="https://..." />
-            </div>
-
-            <div class="admin-field admin-article-editor-group" data-article-editor-group="alt">
-              <label for="article-block-alt">Mô tả ảnh</label>
-              <input id="article-block-alt" type="text" placeholder="Mô tả ngắn cho hình ảnh" />
-            </div>
-
-            <div class="admin-inline-action-row admin-article-editor-group" data-article-editor-group="upload">
-              <button class="admin-button admin-button--secondary" type="button" id="article-block-upload-image">
-                <i class="bi bi-image"></i>
-                Chọn ảnh local
-              </button>
-              <button class="admin-button admin-button--secondary" type="button" id="article-block-upload-file">
-                <i class="bi bi-upload"></i>
-                Chọn file/video local
-              </button>
-            </div>
-
-            <div class="admin-toolbar-actions admin-article-editor-actions admin-field--full">
-              <button class="admin-button admin-button--secondary" type="button" id="article-block-move-up"><i class="bi bi-arrow-up"></i>Đưa lên</button>
-              <button class="admin-button admin-button--secondary" type="button" id="article-block-move-down"><i class="bi bi-arrow-down"></i>Đưa xuống</button>
-              <button class="admin-button admin-button--secondary" type="button" id="article-block-duplicate"><i class="bi bi-copy"></i>Nhân đôi</button>
-              <button class="admin-button admin-button--danger" type="button" id="article-block-delete"><i class="bi bi-trash3"></i>Xóa box</button>
-            </div>
-          </div>
-        </section>
-
-        <section class="admin-article-builder-card admin-article-builder-card--wide">
-          <div class="admin-article-builder-card__head">
-            <div>
-              <strong>JSON tự sinh</strong>
-              <span>Phần này readonly, sinh trực tiếp từ builder phía trên.</span>
-            </div>
-          </div>
-
-          <div class="admin-field admin-field--full">
-            <label for="article-json">ContentJson</label>
-            <textarea id="article-json" class="admin-json-editor" readonly spellcheck="false"></textarea>
-          </div>
-        </section>
-      </div>
-
-      <div class="admin-json-toolbar">
-        <button class="admin-button admin-button--secondary" type="button" id="article-copy-json">
-          <i class="bi bi-clipboard"></i>
-          Sao chép JSON
-        </button>
-        <button class="admin-button admin-button--danger" type="button" id="article-delete">
-          <i class="bi bi-trash3"></i>
-          Xóa article
-        </button>
-        <button class="admin-button admin-button--primary" type="button" id="article-save">
-          <i class="bi bi-check2-circle"></i>
-          Lưu article
-        </button>
-      </div>
-    </article>
-
-    <aside class="admin-panel admin-game-article-preview-panel admin-workspace-panel" data-workspace-panel="preview">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Preview bài báo</h2>
-          <span class="admin-panel__subtitle">Render live từ JSON của game đang chọn.</span>
-        </div>
-        <span class="admin-panel__pill">preview</span>
-      </div>
-
-      <div class="admin-article-preview-meta" data-article-preview-meta></div>
-      <div class="admin-article-stage admin-list-scroll">
-        <div class="admin-article-canvas" data-article-preview></div>
-      </div>
+      <div class="admin-mini-stack admin-list-scroll admin-crud-list" id="storeGameList"></div>
     </aside>
   </section>
 </div>

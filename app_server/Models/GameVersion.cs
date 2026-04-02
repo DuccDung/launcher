@@ -25,13 +25,13 @@ public partial class GameVersion
     [Column("updated_at", TypeName = "datetime2(0)")]
     public DateTime UpdatedAt { get; set; }
 
+    [Column("price", TypeName = "decimal(18,2)")]
+    public decimal? Price { get; set; }
+
     [Column("is_removed")]
     public bool IsRemoved { get; set; }
 
     [ForeignKey(nameof(GameId))]
     [InverseProperty(nameof(Game.GameVersions))]
     public virtual Game Game { get; set; } = null!;
-
-    [InverseProperty(nameof(Account.Version))]
-    public virtual ICollection<Account> Accounts { get; set; } = new List<Account>();
 }

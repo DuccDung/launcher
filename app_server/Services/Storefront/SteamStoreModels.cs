@@ -29,6 +29,9 @@ public sealed class SteamStoreAppData
     [JsonPropertyName("is_free")]
     public bool IsFree { get; init; }
 
+    [JsonPropertyName("price_overview")]
+    public SteamStorePriceOverview? PriceOverview { get; init; }
+
     [JsonPropertyName("dlc")]
     public List<int>? Dlc { get; init; }
 
@@ -121,6 +124,27 @@ public sealed class SteamStoreRequirements
 
     [JsonPropertyName("recommended")]
     public string? Recommended { get; init; }
+}
+
+public sealed class SteamStorePriceOverview
+{
+    [JsonPropertyName("currency")]
+    public string? Currency { get; init; }
+
+    [JsonPropertyName("initial")]
+    public int? Initial { get; init; }
+
+    [JsonPropertyName("final")]
+    public int? Final { get; init; }
+
+    [JsonPropertyName("discount_percent")]
+    public int? DiscountPercent { get; init; }
+
+    [JsonPropertyName("initial_formatted")]
+    public string? InitialFormatted { get; init; }
+
+    [JsonPropertyName("final_formatted")]
+    public string? FinalFormatted { get; init; }
 }
 
 public sealed class SteamStorePlatforms

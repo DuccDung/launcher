@@ -12,9 +12,9 @@ public sealed class AdminGameWorkspaceController : Controller
         ViewData["Title"] = "Game Workspace | NestG";
         ViewData["AdminNav"] = "games-workspace";
         ViewData["AdminBodyClass"] = "admin-crud-page admin-game-lab-page";
-        ViewData["AdminHeaderTitle"] = "Game workspace theo model thật";
-        ViewData["AdminHeaderSubtitle"] = "Game, version, account, file, media và article trên cùng một luồng quản trị.";
-        ViewData["AdminSearchPlaceholder"] = "Tìm game theo tên hoặc slug preview...";
+        ViewData["AdminHeaderTitle"] = "Game workspace theo model that";
+        ViewData["AdminHeaderSubtitle"] = "Game, version va media tren cung mot luong quan tri.";
+        ViewData["AdminSearchPlaceholder"] = "Tim game theo ten hoac slug preview...";
 
         return View("~/Views/Admin/Games/Workspace.cshtml");
     }

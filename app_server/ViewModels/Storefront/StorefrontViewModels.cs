@@ -15,13 +15,13 @@ public sealed class ProductCardViewModel
 
     public string? PosterImageUrl { get; init; }
 
-    public string Badge { get; init; } = "Kích hoạt Steam cá nhân";
+    public string Badge { get; init; } = "Kich hoat Steam ca nhan";
 
     public string Tag { get; init; } = "Steam";
 
-    public string NewPriceText { get; init; } = string.Empty;
+    public string CurrentPriceText { get; init; } = string.Empty;
 
-    public string? OldPriceText { get; init; }
+    public string? ReferencePriceText { get; init; }
 
     public string? DiscountText { get; init; }
 }
@@ -38,17 +38,17 @@ public sealed class ProductDetailViewModel
 
     public string PageTitle { get; init; } = string.Empty;
 
-    public string RatingScoreText { get; init; } = "—";
+    public string RatingScoreText { get; init; } = "-";
 
-    public string RatingCountText { get; init; } = "Chưa có dữ liệu";
+    public string RatingCountText { get; init; } = "Chua co du lieu";
 
-    public string NewPriceText { get; init; } = string.Empty;
+    public string CurrentPriceText { get; init; } = string.Empty;
 
-    public string? OldPriceText { get; init; }
+    public string? ReferencePriceText { get; init; }
 
     public string? DiscountText { get; init; }
 
-    public string StatusText { get; init; } = "Còn hàng";
+    public string StatusText { get; init; } = "Con hang";
 
     public string CoverImageUrl { get; init; } = string.Empty;
 
@@ -56,7 +56,7 @@ public sealed class ProductDetailViewModel
 
     public string AgeCaption { get; init; } = "Steam";
 
-    public string AgeDescription { get; init; } = "Phù hợp với hầu hết người chơi.";
+    public string AgeDescription { get; init; } = "Phu hop voi hau het nguoi choi.";
 
     public string? ShortDescription { get; init; }
 
@@ -82,43 +82,9 @@ public sealed class ProductDetailViewModel
 
     public IReadOnlyList<ProductRequirementCardViewModel> Requirements { get; init; } = [];
 
-    public ProductArticleViewModel? Article { get; init; }
-
     public IReadOnlyList<ProductCustomerReviewViewModel> CustomerReviews { get; init; } = [];
 
     public IReadOnlyList<ProductCardViewModel> RelatedProducts { get; init; } = [];
-}
-
-public sealed class ProductArticleViewModel
-{
-    public string? Eyebrow { get; init; }
-
-    public string Title { get; init; } = string.Empty;
-
-    public string? Summary { get; init; }
-
-    public IReadOnlyList<ProductArticleBlockViewModel> Blocks { get; init; } = [];
-}
-
-public sealed class ProductArticleBlockViewModel
-{
-    public string Type { get; init; } = "paragraph";
-
-    public string? Text { get; init; }
-
-    public string? Title { get; init; }
-
-    public string? Intro { get; init; }
-
-    public IReadOnlyList<string> Items { get; init; } = [];
-
-    public string? Url { get; init; }
-
-    public string? Alt { get; init; }
-
-    public bool IsYoutube { get; init; }
-
-    public string? VideoEmbedUrl { get; init; }
 }
 
 public sealed class ProductGalleryItemViewModel
@@ -138,6 +104,8 @@ public sealed class ProductEditionViewModel
 
     public string Note { get; init; } = string.Empty;
 
+    public string? PriceText { get; init; }
+
     public bool IsActive { get; init; }
 }
 
@@ -154,7 +122,7 @@ public sealed class ProductCustomerReviewViewModel
 
     public string AvatarText { get; init; } = string.Empty;
 
-    public string RatingText { get; init; } = "—";
+    public string RatingText { get; init; } = "-";
 
     public string CreatedAtText { get; init; } = string.Empty;
 

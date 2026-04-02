@@ -4,24 +4,23 @@ namespace app_server.Contracts.Admin.GameWorkspace;
 
 public sealed class AdminGameUpsertRequest
 {
-    [Required(ErrorMessage = "Tên game là bắt buộc.")]
+    [Required(ErrorMessage = "Ten game la bat buoc.")]
     [StringLength(255)]
     public string Name { get; set; } = string.Empty;
 
-    [Range(1, int.MaxValue, ErrorMessage = "Steam App ID phải lớn hơn 0.")]
+    [Range(1, int.MaxValue, ErrorMessage = "Steam App ID phai lon hon 0.")]
     public int? SteamAppId { get; set; }
 
-    [Required(ErrorMessage = "Rating là bắt buộc.")]
-    [Range(typeof(decimal), "0", "5", ErrorMessage = "Rating phải nằm trong khoảng từ 0 đến 5.")]
+    [Range(typeof(decimal), "0", "5", ErrorMessage = "Rating phai nam trong khoang tu 0 den 5.")]
     public decimal? Rating { get; set; }
 
-    [Required(ErrorMessage = "Giá cũ là bắt buộc.")]
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Giá cũ phải lớn hơn hoặc bằng 0.")]
-    public decimal? OldPrice { get; set; }
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Steam price phai lon hon hoac bang 0.")]
+    public decimal? SteamPrice { get; set; }
 
-    [Required(ErrorMessage = "Giá mới là bắt buộc.")]
-    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Giá mới phải lớn hơn hoặc bằng 0.")]
-    public decimal? NewPrice { get; set; }
+    [StringLength(500)]
+    public string? PhotoUrl { get; set; }
+
+    public bool IsRemove { get; set; }
 
     public List<Guid> CategoryIds { get; set; } = new();
 }
@@ -31,42 +30,10 @@ public sealed class AdminGameVersionUpsertRequest
     [StringLength(255)]
     public string? VersionName { get; set; }
 
+    [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Gia version phai lon hon hoac bang 0.")]
+    public decimal? Price { get; set; }
+
     public bool IsRemoved { get; set; }
-}
-
-public sealed class AdminAccountUpsertRequest
-{
-    public Guid? VersionId { get; set; }
-
-    public bool IsActive { get; set; }
-
-    public bool IsPurchased { get; set; }
-}
-
-public sealed class AdminGameFileUpsertRequest
-{
-    [Required]
-    public Guid AccountId { get; set; }
-
-    [StringLength(100)]
-    public string? FileType { get; set; }
-
-    public bool IsActive { get; set; }
-
-    [StringLength(1000)]
-    public string? FileUrl01 { get; set; }
-
-    [StringLength(1000)]
-    public string? FileUrl02 { get; set; }
-
-    [StringLength(1000)]
-    public string? FileUrl03 { get; set; }
-
-    [StringLength(1000)]
-    public string? FileUrl04 { get; set; }
-
-    [StringLength(1000)]
-    public string? FileUrl05 { get; set; }
 }
 
 public sealed class AdminMediaUpsertRequest
@@ -79,21 +46,22 @@ public sealed class AdminMediaUpsertRequest
     public string Url { get; set; } = string.Empty;
 }
 
-public sealed class AdminArticleUpsertRequest
-{
-    public string? Summary { get; set; }
-
-    [Required]
-    public string ContentJson { get; set; } = string.Empty;
-}
+public sealed record AdminSteamPreviewResponse(
+    int SteamAppId,
+    string Name,
+    string? PhotoUrl,
+    IReadOnlyList<string> Tags,
+    string? ReleaseDate,
+    decimal OriginalPrice,
+    decimal SalePrice,
+    string OriginalPriceText,
+    string SalePriceText,
+    bool IsFree);
 
 public sealed record AdminWorkspaceStatsResponse(
     int TotalGames,
     int TotalVersions,
-    int TotalAccounts,
-    int TotalFiles,
-    int TotalMedia,
-    int TotalArticles);
+    int TotalMedia);
 
 public sealed record AdminWorkspaceCategoryResponse(
     Guid CategoryId,
@@ -107,13 +75,13 @@ public sealed record AdminWorkspaceGameListItemResponse(
     string Slug,
     int? SteamAppId,
     decimal? Rating,
-    decimal? OldPrice,
-    decimal? NewPrice,
+    decimal? SteamPrice,
+    string? PhotoUrl,
+    bool IsRemove,
     IReadOnlyList<Guid> CategoryIds,
     IReadOnlyList<string> CategoryNames,
     int VersionCount,
     int MediaCount,
-    bool HasArticle,
     DateTime UpdatedAt);
 
 public sealed record AdminWorkspaceGameResponse(
@@ -122,8 +90,9 @@ public sealed record AdminWorkspaceGameResponse(
     string Slug,
     int? SteamAppId,
     decimal? Rating,
-    decimal? OldPrice,
-    decimal? NewPrice,
+    decimal? SteamPrice,
+    string? PhotoUrl,
+    bool IsRemove,
     IReadOnlyList<Guid> CategoryIds,
     DateTime UpdatedAt);
 
@@ -131,28 +100,8 @@ public sealed record AdminWorkspaceVersionResponse(
     Guid VersionId,
     Guid GameId,
     string? VersionName,
-    int LinkedAccountCount,
+    decimal? Price,
     bool IsRemoved,
-    DateTime UpdatedAt);
-
-public sealed record AdminWorkspaceAccountResponse(
-    Guid AccountId,
-    Guid? VersionId,
-    bool IsActive,
-    bool IsPurchased,
-    int GameFileCount,
-    DateTime UpdatedAt);
-
-public sealed record AdminWorkspaceFileResponse(
-    Guid FileId,
-    Guid AccountId,
-    string? FileType,
-    bool IsActive,
-    string? FileUrl01,
-    string? FileUrl02,
-    string? FileUrl03,
-    string? FileUrl04,
-    string? FileUrl05,
     DateTime UpdatedAt);
 
 public sealed record AdminWorkspaceMediaResponse(
@@ -162,25 +111,15 @@ public sealed record AdminWorkspaceMediaResponse(
     string? MediaType,
     DateTime UpdatedAt);
 
-public sealed record AdminWorkspaceArticleResponse(
-    Guid ArticleId,
-    Guid GameId,
-    string? Summary,
-    string ContentJson,
-    DateTime UpdatedAt);
-
 public sealed record AdminWorkspaceBootstrapResponse(
     AdminWorkspaceStatsResponse Stats,
     IReadOnlyList<AdminWorkspaceCategoryResponse> Categories,
-    IReadOnlyList<AdminWorkspaceGameListItemResponse> Games,
-    IReadOnlyList<AdminWorkspaceAccountResponse> Accounts);
+    IReadOnlyList<AdminWorkspaceGameListItemResponse> Games);
 
 public sealed record AdminWorkspaceDetailsResponse(
     AdminWorkspaceGameResponse Game,
     IReadOnlyList<AdminWorkspaceVersionResponse> Versions,
-    IReadOnlyList<AdminWorkspaceFileResponse> Files,
-    IReadOnlyList<AdminWorkspaceMediaResponse> MediaItems,
-    AdminWorkspaceArticleResponse? Article);
+    IReadOnlyList<AdminWorkspaceMediaResponse> MediaItems);
 
 public sealed record AdminWorkspaceUploadResponse(
     string Url,
