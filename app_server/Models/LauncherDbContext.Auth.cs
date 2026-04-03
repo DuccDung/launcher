@@ -39,6 +39,7 @@ public partial class LauncherDbContext
         });
 
         ConfigureGameCatalogModels(modelBuilder);
+        ConfigureCommerceModels(modelBuilder);
         ConfigureAuthorizationModels(modelBuilder);
     }
 }

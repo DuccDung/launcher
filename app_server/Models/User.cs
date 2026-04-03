@@ -44,6 +44,9 @@ public partial class User
     [Column("updated_at")]
     public DateTime UpdatedAt { get; set; }
 
+    [InverseProperty(nameof(Cart.User))]
+    public virtual Cart? Cart { get; set; }
+
     [InverseProperty("User")]
     public virtual Profile? Profile { get; set; }
 

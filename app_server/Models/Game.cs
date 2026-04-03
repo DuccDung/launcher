@@ -42,6 +42,9 @@ public partial class Game
     [InverseProperty(nameof(GameVersion.Game))]
     public virtual ICollection<GameVersion> GameVersions { get; set; } = new List<GameVersion>();
 
+    [InverseProperty(nameof(CartItem.Game))]
+    public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
+
     [InverseProperty(nameof(Media.Game))]
     public virtual ICollection<Media> MediaItems { get; set; } = new List<Media>();
 

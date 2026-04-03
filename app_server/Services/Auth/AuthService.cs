@@ -14,6 +14,7 @@ public class AuthService(
 {
     private const string ActiveStatus = "active";
     private const string InactiveStatus = "inactive";
+    private const string ActiveCartStatus = "active";
     private const string DefaultUserRoleCode = "USER";
     private const string AdminRoleCode = "ADMIN";
 
@@ -37,6 +38,7 @@ public class AuthService(
 
         var user = await dbContext.Users
             .Include(item => item.Profile)
+            .Include(item => item.Cart)
             .Include(item => item.UserRoles)
             .ThenInclude(item => item.Role)
             .FirstOrDefaultAsync(item => item.Email == email, cancellationToken);
@@ -111,6 +113,7 @@ public class AuthService(
             }
         }
 
+        EnsureUserHasCart(user, utcNow);
         EnsureUserHasRole(user, defaultRole, utcNow);
         await dbContext.SaveChangesAsync(cancellationToken);
 
@@ -560,6 +563,25 @@ public class AuthService(
 
         user.UserRoles.Add(userRole);
         dbContext.UserRoles.Add(userRole);
+    }
+
+    private void EnsureUserHasCart(User user, DateTime createdAtUtc)
+    {
+        if (user.Cart is not null)
+        {
+            return;
+        }
+
+        var cart = new Cart
+        {
+            User = user,
+            Status = ActiveCartStatus,
+            CreatedAt = createdAtUtc,
+            UpdatedAt = createdAtUtc
+        };
+
+        user.Cart = cart;
+        dbContext.Carts.Add(cart);
     }
 
     private async Task<User?> LoadUserWithProfileAndRolesAsync(string email, CancellationToken cancellationToken)
