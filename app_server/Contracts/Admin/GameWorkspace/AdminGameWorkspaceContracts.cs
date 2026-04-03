@@ -11,9 +11,6 @@ public sealed class AdminGameUpsertRequest
     [Range(1, int.MaxValue, ErrorMessage = "Steam App ID phai lon hon 0.")]
     public int? SteamAppId { get; set; }
 
-    [Range(typeof(decimal), "0", "5", ErrorMessage = "Rating phai nam trong khoang tu 0 den 5.")]
-    public decimal? Rating { get; set; }
-
     [Range(typeof(decimal), "0", "79228162514264337593543950335", ErrorMessage = "Steam price phai lon hon hoac bang 0.")]
     public decimal? SteamPrice { get; set; }
 
@@ -23,6 +20,11 @@ public sealed class AdminGameUpsertRequest
     public bool IsRemove { get; set; }
 
     public List<Guid> CategoryIds { get; set; } = new();
+}
+
+public sealed class AdminGameTrendingUpdateRequest
+{
+    public bool IsTrending { get; set; }
 }
 
 public sealed class AdminGameVersionUpsertRequest
@@ -69,17 +71,24 @@ public sealed record AdminWorkspaceCategoryResponse(
     int DisplayOrder,
     string? ShortDescription);
 
+public sealed record AdminWorkspaceGameVersionListItemResponse(
+    Guid VersionId,
+    string? VersionName,
+    decimal? Price,
+    bool IsRemoved);
+
 public sealed record AdminWorkspaceGameListItemResponse(
     Guid GameId,
     string Name,
     string Slug,
     int? SteamAppId,
-    decimal? Rating,
     decimal? SteamPrice,
     string? PhotoUrl,
+    bool IsTrending,
     bool IsRemove,
     IReadOnlyList<Guid> CategoryIds,
     IReadOnlyList<string> CategoryNames,
+    IReadOnlyList<AdminWorkspaceGameVersionListItemResponse> Versions,
     int VersionCount,
     int MediaCount,
     DateTime UpdatedAt);
@@ -89,9 +98,9 @@ public sealed record AdminWorkspaceGameResponse(
     string Name,
     string Slug,
     int? SteamAppId,
-    decimal? Rating,
     decimal? SteamPrice,
     string? PhotoUrl,
+    bool IsTrending,
     bool IsRemove,
     IReadOnlyList<Guid> CategoryIds,
     DateTime UpdatedAt);

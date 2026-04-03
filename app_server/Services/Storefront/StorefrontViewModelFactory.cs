@@ -51,7 +51,7 @@ public static partial class StorefrontViewModelFactory
         var gallery = BuildGallery(game, steamData, displayName);
         var requirements = BuildRequirements(steamData);
         var discount = CalculateDiscount(referencePrice, currentPrice);
-        var ratingText = game.Rating?.ToString("0.0", CultureInfo.InvariantCulture) ?? ResolveMetacriticAsFivePointScale(steamData);
+        var ratingText = ResolveMetacriticAsFivePointScale(steamData);
 
         return new ProductDetailViewModel
         {

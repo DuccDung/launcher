@@ -22,6 +22,7 @@ public partial class LauncherDbContext
         {
             entity.Property(e => e.GameId).HasDefaultValueSql("(newsequentialid())");
             entity.Property(e => e.PhotoUrl).HasMaxLength(500).IsUnicode();
+            entity.Property(e => e.IsTrending).HasDefaultValue(false);
             entity.Property(e => e.IsRemove).HasDefaultValue(false);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(sysutcdatetime())");
             entity.Property(e => e.UpdatedAt).HasDefaultValueSql("(sysutcdatetime())");

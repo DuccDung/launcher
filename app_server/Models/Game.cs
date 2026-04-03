@@ -14,15 +14,15 @@ public partial class Game
     [StringLength(255)]
     public string Name { get; set; } = null!;
 
-    [Column("rating", TypeName = "decimal(3,2)")]
-    public decimal? Rating { get; set; }
-
     [Column("steam_price", TypeName = "decimal(18,2)")]
     public decimal? SteamPrice { get; set; }
 
     [Column("photo_url", TypeName = "nvarchar(500)")]
     [StringLength(500)]
     public string? PhotoUrl { get; set; }
+
+    [Column("is_trending")]
+    public bool IsTrending { get; set; }
 
     [Column("isremove")]
     public bool IsRemove { get; set; }

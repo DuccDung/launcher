@@ -9,6 +9,8 @@
 }
 
 <div class="admin-game-workspace-page" data-game-workspace>
+  <div class="admin-workspace-toast-stack" id="workspaceToastStack" aria-live="assertive" aria-atomic="true"></div>
+
   <section class="admin-page-intro">
     <div>
       <h1>CRUD game theo Steam App ID</h1>
@@ -17,180 +19,215 @@
   </section>
 
   <section class="admin-builder-grid admin-builder-grid--crud admin-game-workspace-grid">
-    <article class="admin-panel admin-crud-panel admin-crud-panel--form">
-      <div class="admin-panel__head">
-        <div>
-          <h2 class="admin-panel__title">Thong tin game</h2>
-          <span class="admin-panel__subtitle">Nhap app id, lay du lieu va luu vao store.</span>
-        </div>
-        <span class="admin-panel__pill">steam</span>
-      </div>
-
-      <p class="admin-category-feedback" id="workspaceMessage" hidden></p>
-
-      <div class="admin-game-fetch-shell">
-        <div class="admin-game-fetch-row">
-          <div class="admin-field">
-            <label for="steamAppIdInput">Steam App ID</label>
-            <input id="steamAppIdInput" type="text" inputmode="numeric" placeholder="Vi du: 1245620" />
+    <div class="admin-game-workspace-stack">
+      <article class="admin-panel admin-crud-panel admin-crud-panel--form">
+        <div class="admin-panel__head">
+          <div>
+            <h2 class="admin-panel__title">Lay du lieu Steam</h2>
+            <span class="admin-panel__subtitle">Nhap app id va goi API de mo form chi tiet ben duoi.</span>
           </div>
+          <span class="admin-panel__pill">steam</span>
         </div>
 
-        <div class="admin-game-fetch-actions">
-          <button class="admin-button admin-button--primary" type="button" id="steamFetchButton">
-            <i class="bi bi-search"></i>
-            Goi Steam API
-          </button>
-          <div class="admin-game-fetch-status is-idle" id="steamFetchStatus" role="status" aria-live="polite">
-            Chua lay du lieu tu Steam.
-          </div>
-        </div>
-      </div>
+        <p class="admin-category-feedback" id="workspaceMessage" hidden></p>
 
-      <article class="admin-game-steam-preview">
-        <div class="admin-game-steam-preview__image">
-          <img id="steamPreviewImage" src="~/admin-ui/assets/img/g_item_02.png" alt="Steam preview" />
-        </div>
-
-        <div class="admin-game-steam-preview__body">
-          <div class="admin-game-steam-preview__head">
-            <div>
-              <span class="admin-record-card__eyebrow" id="steamPreviewStatus">Steam</span>
-              <h3 class="admin-record-card__title" id="steamPreviewTitle">Chua co game</h3>
-              <span class="admin-record-card__sub" id="steamPreviewMeta">Nhap app id de lay du lieu.</span>
+        <div class="admin-game-fetch-shell">
+          <div class="admin-game-fetch-row">
+            <div class="admin-field">
+              <label for="steamAppIdInput">Steam App ID</label>
+              <input id="steamAppIdInput" type="text" inputmode="numeric" placeholder="Vi du: 1245620" />
             </div>
           </div>
 
-          <div class="admin-chip-row admin-selected-pills" id="steamPreviewTags">
-            <span class="admin-soft-chip">Tags</span>
+          <div class="admin-game-fetch-actions">
+            <button class="admin-button admin-button--primary" type="button" id="steamFetchButton">
+              <i class="bi bi-search"></i>
+              Goi Steam API
+            </button>
+            <div class="admin-game-fetch-status is-idle" id="steamFetchStatus" role="status" aria-live="polite">
+              Chua lay du lieu tu Steam.
+            </div>
           </div>
+        </div>
+
+        <div class="admin-game-fetch-hint">
+          Form chi tiet, gia va version se hien sau khi ban goi Steam API hoac chon game trong danh sach store.
         </div>
       </article>
 
-      <div class="admin-form-grid">
-        <div class="admin-field">
-          <label for="gameTitleInput">Ten game</label>
-          <input id="gameTitleInput" type="text" placeholder="Tu dong dien tu Steam" readonly />
-        </div>
-        <div class="admin-field">
-          <label for="gameSlugInput">Slug</label>
-          <input id="gameSlugInput" type="text" placeholder="auto-slug" readonly />
-        </div>
-      </div>
-
-      <section class="admin-game-category-shell">
-        <div class="admin-panel__head admin-panel__head--compact">
+      <article class="admin-panel admin-crud-panel admin-crud-panel--form admin-game-details-panel" id="workspaceDetailsCard" hidden>
+        <div class="admin-panel__head">
           <div>
-            <h2 class="admin-panel__title">Category</h2>
-            <span class="admin-panel__subtitle">Moi game phai chon it nhat mot category.</span>
+            <h2 class="admin-panel__title">Thong tin game se luu vao store</h2>
+            <span class="admin-panel__subtitle">Kiem tra preview, category, gia ban va version truoc khi luu.</span>
           </div>
-          <span class="admin-panel__pill">multi select</span>
+          <span class="admin-panel__pill" id="workspaceDetailsPill">steam data</span>
         </div>
 
-        <div class="admin-game-category-grid" id="gameCategoryChoices"></div>
-        <div class="admin-chip-row admin-selected-pills" id="gameSelectedCategories">
-          <span class="admin-soft-chip">Chua chon category</span>
-        </div>
-      </section>
-
-      <section class="admin-game-price-grid">
-        <div class="admin-game-price-card">
-          <span>Gia Steam goc</span>
-          <strong id="steamOriginalPrice">0 VND</strong>
-          <small id="steamOriginalPriceNote">Chua co du lieu</small>
-        </div>
-        <div class="admin-game-price-card">
-          <span>Gia Steam hien tai</span>
-          <strong id="steamSalePrice">0 VND</strong>
-          <small id="steamSalePriceNote">Theo region VN</small>
-        </div>
-        <div class="admin-game-price-card">
-          <span>Giam gia ban thuong</span>
-          <strong id="storeDiscountPreview">0%</strong>
-          <small>Ban thuong</small>
-        </div>
-        <div class="admin-game-price-card">
-          <span>Gia ban thuong</span>
-          <strong id="storeFinalPrice">0 VND</strong>
-          <small id="storeFinalPriceNote">Sau giam gia</small>
-        </div>
-      </section>
-
-      <section class="admin-section-stack">
-        <div class="admin-panel__head admin-panel__head--compact">
-          <div>
-            <h2 class="admin-panel__title">Version</h2>
-            <span class="admin-panel__subtitle">Ban thuong va ban full DLC.</span>
+        <article class="admin-game-steam-preview">
+          <div class="admin-game-steam-preview__image">
+            <img id="steamPreviewImage" src="~/admin-ui/assets/img/g_item_02.png" alt="Steam preview" />
           </div>
-          <span class="admin-panel__pill">2 version</span>
+
+          <div class="admin-game-steam-preview__body">
+            <div class="admin-game-steam-preview__head">
+              <div>
+                <span class="admin-record-card__eyebrow" id="steamPreviewStatus">Steam</span>
+                <h3 class="admin-record-card__title" id="steamPreviewTitle">Chua co game</h3>
+                <span class="admin-record-card__sub" id="steamPreviewMeta">Nhap app id de lay du lieu.</span>
+              </div>
+            </div>
+
+            <div class="admin-chip-row admin-selected-pills" id="steamPreviewTags">
+              <span class="admin-soft-chip">Tags</span>
+            </div>
+          </div>
+        </article>
+
+        <section class="admin-game-preview-stat-grid">
+          <div class="admin-game-preview-stat">
+            <span>Steam App ID</span>
+            <strong id="steamPreviewAppId">-</strong>
+          </div>
+          <div class="admin-game-preview-stat">
+            <span>Ngay phat hanh</span>
+            <strong id="steamPreviewRelease">Chua ro</strong>
+          </div>
+          <div class="admin-game-preview-stat">
+            <span>Nguon du lieu</span>
+            <strong id="steamPreviewSource">Chua nap</strong>
+          </div>
+          <div class="admin-game-preview-stat">
+            <span>So tag</span>
+            <strong id="steamPreviewTagCount">0</strong>
+          </div>
+        </section>
+
+        <div class="admin-form-grid">
+          <div class="admin-field">
+            <label for="gameTitleInput">Ten game</label>
+            <input id="gameTitleInput" type="text" placeholder="Tu dong dien tu Steam" readonly />
+          </div>
+          <div class="admin-field">
+            <label for="gameSlugInput">Slug</label>
+            <input id="gameSlugInput" type="text" placeholder="auto-slug" readonly />
+          </div>
         </div>
 
-        <div class="admin-version-list admin-game-version-list">
-          <article class="admin-version-card admin-game-version-card">
-            <div class="admin-game-version-card__head">
-              <label class="admin-game-version-toggle">
-                <input id="versionStandardEnabled" type="checkbox" checked />
-                <span>Ban thuong</span>
-              </label>
-              <span class="admin-status is-ok">Standard</span>
+        <section class="admin-game-category-shell">
+          <div class="admin-panel__head admin-panel__head--compact">
+            <div>
+              <h2 class="admin-panel__title">Category</h2>
+              <span class="admin-panel__subtitle">Moi game phai chon it nhat mot category.</span>
             </div>
-            <div class="admin-form-grid">
-              <div class="admin-field">
-                <label for="versionStandardName">Ten version</label>
-                <input id="versionStandardName" type="text" value="Ban thuong" />
-              </div>
-              <div class="admin-field">
-                <label for="versionStandardDiscount">Giam gia (%)</label>
-                <input id="versionStandardDiscount" type="number" min="0" max="100" value="0" />
-              </div>
-              <div class="admin-field admin-field--full">
-                <label for="versionStandardPrice">Gia ban</label>
-                <input id="versionStandardPrice" type="text" inputmode="numeric" placeholder="Tu dong tinh theo VND" />
-              </div>
-            </div>
-          </article>
+            <span class="admin-panel__pill">multi select</span>
+          </div>
 
-          <article class="admin-version-card admin-game-version-card">
-            <div class="admin-game-version-card__head">
-              <label class="admin-game-version-toggle">
-                <input id="versionFullEnabled" type="checkbox" checked />
-                <span>Ban full DLC</span>
-              </label>
-              <span class="admin-status is-check">Full DLC</span>
+          <div class="admin-game-category-grid" id="gameCategoryChoices"></div>
+          <div class="admin-chip-row admin-selected-pills" id="gameSelectedCategories">
+            <span class="admin-soft-chip">Chua chon category</span>
+          </div>
+        </section>
+
+        <section class="admin-game-price-grid">
+          <div class="admin-game-price-card">
+            <span>Gia Steam goc</span>
+            <strong id="steamOriginalPrice">0 VND</strong>
+            <small id="steamOriginalPriceNote">Chua co du lieu</small>
+          </div>
+          <div class="admin-game-price-card">
+            <span>Gia Steam hien tai</span>
+            <strong id="steamSalePrice">0 VND</strong>
+            <small id="steamSalePriceNote">Theo region VN</small>
+          </div>
+          <div class="admin-game-price-card">
+            <span>Giam gia ban thuong</span>
+            <strong id="storeDiscountPreview">0%</strong>
+            <small>Ban thuong</small>
+          </div>
+          <div class="admin-game-price-card">
+            <span>Gia ban thuong</span>
+            <strong id="storeFinalPrice">0 VND</strong>
+            <small id="storeFinalPriceNote">Sau giam gia</small>
+          </div>
+        </section>
+
+        <section class="admin-section-stack">
+          <div class="admin-panel__head admin-panel__head--compact">
+            <div>
+              <h2 class="admin-panel__title">Version</h2>
+              <span class="admin-panel__subtitle">Ban thuong va ban full DLC.</span>
             </div>
-            <div class="admin-form-grid">
-              <div class="admin-field">
-                <label for="versionFullName">Ten version</label>
-                <input id="versionFullName" type="text" value="Ban full DLC" />
+            <span class="admin-panel__pill">2 version</span>
+          </div>
+
+          <div class="admin-version-list admin-game-version-list">
+            <article class="admin-version-card admin-game-version-card">
+              <div class="admin-game-version-card__head">
+                <label class="admin-game-version-toggle">
+                  <input id="versionStandardEnabled" type="checkbox" checked />
+                  <span>Ban thuong</span>
+                </label>
+                <span class="admin-status is-ok">Standard</span>
               </div>
-              <div class="admin-field">
-                <label for="versionFullDiscount">Giam gia (%)</label>
-                <input id="versionFullDiscount" type="number" min="0" max="100" value="0" />
+              <div class="admin-form-grid">
+                <div class="admin-field">
+                  <label for="versionStandardName">Ten version</label>
+                  <input id="versionStandardName" type="text" value="Ban thuong" />
+                </div>
+                <div class="admin-field">
+                  <label for="versionStandardDiscount">Giam gia (%)</label>
+                  <input id="versionStandardDiscount" type="number" min="0" max="100" value="0" />
+                </div>
+                <div class="admin-field admin-field--full">
+                  <label for="versionStandardPrice">Gia ban</label>
+                  <input id="versionStandardPrice" type="text" inputmode="numeric" placeholder="Tu dong tinh theo VND" />
+                </div>
               </div>
-              <div class="admin-field admin-field--full">
-                <label for="versionFullPrice">Gia ban</label>
-                <input id="versionFullPrice" type="text" inputmode="numeric" placeholder="Nhap gia ban DLC" />
+            </article>
+
+            <article class="admin-version-card admin-game-version-card">
+              <div class="admin-game-version-card__head">
+                <label class="admin-game-version-toggle">
+                  <input id="versionFullEnabled" type="checkbox" checked />
+                  <span>Ban full DLC</span>
+                </label>
+                <span class="admin-status is-check">Full DLC</span>
               </div>
-            </div>
-          </article>
+              <div class="admin-form-grid">
+                <div class="admin-field">
+                  <label for="versionFullName">Ten version</label>
+                  <input id="versionFullName" type="text" value="Ban full DLC" />
+                </div>
+                <div class="admin-field">
+                  <label for="versionFullDiscount">Giam gia (%)</label>
+                  <input id="versionFullDiscount" type="number" min="0" max="100" value="0" />
+                </div>
+                <div class="admin-field admin-field--full">
+                  <label for="versionFullPrice">Gia ban</label>
+                  <input id="versionFullPrice" type="text" inputmode="numeric" placeholder="Nhap gia ban DLC" />
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <div class="admin-toolbar-actions admin-crud-actions">
+          <button class="admin-button admin-button--primary" type="button" id="saveGameButton">
+            <i class="bi bi-plus-circle"></i>
+            Them
+          </button>
+          <button class="admin-button admin-button--secondary" type="button" id="resetFormButton">
+            <i class="bi bi-arrow-clockwise"></i>
+            Lam moi
+          </button>
+          <button class="admin-button admin-button--danger" type="button" id="deleteGameButton">
+            <i class="bi bi-trash3"></i>
+            Xoa
+          </button>
         </div>
-      </section>
-
-      <div class="admin-toolbar-actions admin-crud-actions">
-        <button class="admin-button admin-button--primary" type="button" id="saveGameButton">
-          <i class="bi bi-plus-circle"></i>
-          Them
-        </button>
-        <button class="admin-button admin-button--secondary" type="button" id="resetFormButton">
-          <i class="bi bi-arrow-clockwise"></i>
-          Lam moi
-        </button>
-        <button class="admin-button admin-button--danger" type="button" id="deleteGameButton">
-          <i class="bi bi-trash3"></i>
-          Xoa
-        </button>
-      </div>
-    </article>
+      </article>
+    </div>
 
     <aside class="admin-panel admin-crud-panel admin-crud-panel--list">
       <div class="admin-panel__head">
@@ -198,7 +235,13 @@
           <h2 class="admin-panel__title">Game trong store</h2>
           <span class="admin-panel__subtitle">Danh sach game da them.</span>
         </div>
-        <span class="admin-panel__pill" id="storeListPill">0 record</span>
+        <div class="admin-game-store-head-actions">
+          <button class="admin-button admin-button--secondary admin-game-store-toggle" type="button" id="storeViewToggleButton">
+            <i class="bi bi-table"></i>
+            Xem bang
+          </button>
+          <span class="admin-panel__pill" id="storeListPill">0 record</span>
+        </div>
       </div>
 
       <div class="admin-crud-filter-row">
@@ -215,4 +258,8 @@
 
 @section Scripts {
   <script src="~/js/admin-game-workspace.js" asp-append-version="true"></script>
+}
+
+@section Styles {
+  <link rel="stylesheet" href="~/css/admin-game-workspace.css" asp-append-version="true" />
 }

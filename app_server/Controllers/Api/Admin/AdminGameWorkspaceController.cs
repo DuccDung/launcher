@@ -19,6 +19,7 @@ public sealed class AdminGameWorkspaceController(
     IWebHostEnvironment webHostEnvironment,
     ISteamStoreService steamStoreService) : ControllerBase
 {
+    private const int MaxTrendingGames = 6;
     private static readonly string[] ImageExtensions = [".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"];
 
     [HttpGet("bootstrap")]
@@ -92,7 +93,6 @@ public sealed class AdminGameWorkspaceController(
         {
             Name = request.Name.Trim(),
             SteamAppId = request.SteamAppId,
-            Rating = request.Rating,
             SteamPrice = request.SteamPrice,
             PhotoUrl = CleanOptionalText(request.PhotoUrl),
             IsRemove = request.IsRemove,
@@ -135,7 +135,6 @@ public sealed class AdminGameWorkspaceController(
 
         game.Name = request.Name.Trim();
         game.SteamAppId = request.SteamAppId;
-        game.Rating = request.Rating;
         game.SteamPrice = request.SteamPrice;
         game.PhotoUrl = CleanOptionalText(request.PhotoUrl);
         game.IsRemove = request.IsRemove;
@@ -145,6 +144,41 @@ public sealed class AdminGameWorkspaceController(
         await dbContext.SaveChangesAsync(cancellationToken);
 
         return Ok(new { message = "Da cap nhat game." });
+    }
+
+    [HttpPut("games/{gameId:guid}/trending")]
+    public async Task<IActionResult> UpdateTrending(Guid gameId, [FromBody] AdminGameTrendingUpdateRequest request, CancellationToken cancellationToken)
+    {
+        var game = await dbContext.Games.SingleOrDefaultAsync(item => item.GameId == gameId && !item.IsRemove, cancellationToken);
+        if (game is null)
+        {
+            return NotFound(new { message = "Khong tim thay game de cap nhat thinh hanh." });
+        }
+
+        if (request.IsTrending && !game.IsTrending)
+        {
+            var trendingCount = await dbContext.Games
+                .AsNoTracking()
+                .Where(item => !item.IsRemove && item.IsTrending && item.GameId != gameId)
+                .CountAsync(cancellationToken);
+
+            if (trendingCount >= MaxTrendingGames)
+            {
+                return Conflict(new
+                {
+                    message = $"Chi duoc dat toi da {MaxTrendingGames} game thinh hanh. Hay bo chon mot game khac truoc."
+                });
+            }
+        }
+
+        game.IsTrending = request.IsTrending;
+        game.UpdatedAt = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        return Ok(new
+        {
+            message = request.IsTrending ? "Da bat game thinh hanh." : "Da bo game khoi danh sach thinh hanh."
+        });
     }
 
     [HttpDelete("games/{gameId:guid}")]
@@ -413,9 +447,9 @@ public sealed class AdminGameWorkspaceController(
                 item.GameId,
                 item.Name,
                 item.SteamAppId,
-                item.Rating,
                 item.SteamPrice,
                 item.PhotoUrl,
+                item.IsTrending,
                 item.IsRemove,
                 item.UpdatedAt
             })
@@ -432,11 +466,20 @@ public sealed class AdminGameWorkspaceController(
                 (link, category) => new { link.GameId, category.CategoryId, category.Name })
             .ToListAsync(cancellationToken);
 
-        var versionCounts = await dbContext.GameVersions
+        var gameVersions = await dbContext.GameVersions
             .AsNoTracking()
             .Where(item => gameIds.Contains(item.GameId) && !item.IsRemoved)
-            .GroupBy(item => item.GameId)
-            .Select(group => new { GameId = group.Key, Count = group.Count() })
+            .OrderBy(item => item.CreatedAt)
+            .ThenBy(item => item.VersionName)
+            .Select(item => new
+            {
+                item.GameId,
+                Version = new AdminWorkspaceGameVersionListItemResponse(
+                    item.VersionId,
+                    item.VersionName,
+                    item.Price,
+                    item.IsRemoved)
+            })
             .ToListAsync(cancellationToken);
 
         var mediaCounts = await dbContext.Media
@@ -446,7 +489,14 @@ public sealed class AdminGameWorkspaceController(
             .Select(group => new { GameId = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
 
-        var versionCountMap = versionCounts.ToDictionary(item => item.GameId, item => item.Count);
+        var versionMap = gameVersions
+            .GroupBy(item => item.GameId)
+            .ToDictionary(
+                group => group.Key,
+                group => (IReadOnlyList<AdminWorkspaceGameVersionListItemResponse>)group
+                    .Select(item => item.Version)
+                    .ToList());
+        var versionCountMap = versionMap.ToDictionary(item => item.Key, item => item.Value.Count);
         var mediaCountMap = mediaCounts.ToDictionary(item => item.GameId, item => item.Count);
         var categoryMap = gameCategoryLinks
             .GroupBy(item => item.GameId)
@@ -468,12 +518,13 @@ public sealed class AdminGameWorkspaceController(
                     item.Name,
                     Slugify(item.Name),
                     item.SteamAppId,
-                    item.Rating,
                     item.SteamPrice,
                     item.PhotoUrl,
+                    item.IsTrending,
                     item.IsRemove,
                     categoriesForGame?.CategoryIds ?? Array.Empty<Guid>(),
                     categoriesForGame?.CategoryNames ?? Array.Empty<string>(),
+                    versionMap.GetValueOrDefault(item.GameId, Array.Empty<AdminWorkspaceGameVersionListItemResponse>()),
                     versionCountMap.GetValueOrDefault(item.GameId, 0),
                     mediaCountMap.GetValueOrDefault(item.GameId, 0),
                     item.UpdatedAt);
@@ -482,10 +533,7 @@ public sealed class AdminGameWorkspaceController(
 
         var stats = new AdminWorkspaceStatsResponse(
             TotalGames: games.Count,
-            TotalVersions: await dbContext.GameVersions
-                .AsNoTracking()
-                .Where(item => !item.IsRemoved && gameIds.Contains(item.GameId))
-                .CountAsync(cancellationToken),
+            TotalVersions: gameVersions.Count,
             TotalMedia: await dbContext.Media
                 .AsNoTracking()
                 .Where(item => item.GameId.HasValue && gameIds.Contains(item.GameId.Value))
@@ -504,9 +552,9 @@ public sealed class AdminGameWorkspaceController(
                 item.GameId,
                 item.Name,
                 item.SteamAppId,
-                item.Rating,
                 item.SteamPrice,
                 item.PhotoUrl,
+                item.IsTrending,
                 item.IsRemove,
                 item.UpdatedAt
             })
@@ -556,9 +604,9 @@ public sealed class AdminGameWorkspaceController(
                 game.Name,
                 Slugify(game.Name),
                 game.SteamAppId,
-                game.Rating,
                 game.SteamPrice,
                 game.PhotoUrl,
+                game.IsTrending,
                 game.IsRemove,
                 categoryIds,
                 game.UpdatedAt),
