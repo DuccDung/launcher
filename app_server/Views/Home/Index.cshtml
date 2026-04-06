@@ -1,80 +1,315 @@
 @model app_server.ViewModels.Storefront.StorefrontHomeViewModel
+@using System.Linq
 @{
     Layout = "~/Views/Shared/_StorefrontLayout.cshtml";
-    var keyword = ViewData["SearchQuery"]?.ToString();
+    var spotlightGames = Model.SpotlightGames.Take(6).ToArray();
+    var discoverThemes = new[] { "marathon", "forza", "bond", "requiem", "crimson", "death" };
 }
 
 <main class="homepage-main">
-    <section class="storefront-hero-section" aria-labelledby="storefrontHeroTitle">
-        <div class="container">
-            <div class="storefront-hero-card">
-                <span class="storefront-hero-eyebrow">Steam Integrated Catalog</span>
-                <h1 id="storefrontHeroTitle">Kho sản phẩm đã nối detail page với Steam API</h1>
-                <p class="storefront-hero-copy">
-                    Chọn một card game để mở trang chi tiết, lấy dữ liệu thật từ Steam và render bằng giao diện storefront trong hệ thống `app_server`.
-                </p>
-                @if (!string.IsNullOrWhiteSpace(keyword))
-                {
-                    <div class="storefront-search-pill">
-                        <span>Kết quả cho:</span>
-                        <strong>@keyword</strong>
+    <section class="hero-banner-section" aria-label="Banner vòng quay Deluxe Gaming">
+        <div class="container hero-banner-wrap">
+            <a asp-controller="Home"
+               asp-action="Index"
+               class="hero-banner-link"
+               aria-label="Mở banner vòng quay Deluxe Gaming">
+                <img src="~/ui/assets/img/banner.png"
+                     asp-append-version="true"
+                     alt="Vòng quay Deluxe Gaming - Quay lộc liền tay, nhận ngay quà khủng"
+                     class="hero-banner-image" />
+            </a>
+        </div>
+    </section>
+
+    @if (spotlightGames.Length > 0)
+    {
+        <section class="discover-section" aria-labelledby="discoverTitle">
+            <div class="container">
+                <div class="discover-heading">
+                    <span class="discover-heading-line" aria-hidden="true"></span>
+                    <h2 id="discoverTitle" class="discover-heading-title">Khám Phá Game Mới</h2>
+                    <span class="discover-heading-line" aria-hidden="true"></span>
+                </div>
+
+                <div class="discover-layout">
+                    <div class="discover-spotlight">
+                        <div class="discover-slider">
+                            @if (spotlightGames.Length > 1)
+                            {
+                                <button class="discover-control discover-control--prev"
+                                        type="button"
+                                        aria-label="Slide trước">
+                                    <i class="bi bi-chevron-left"></i>
+                                </button>
+                            }
+
+                            <div class="discover-slides">
+                                @for (var index = 0; index < spotlightGames.Length; index++)
+                                {
+                                    var game = spotlightGames[index];
+                                    var theme = discoverThemes[index % discoverThemes.Length];
+
+                                    <article class="discover-slide @(index == 0 ? "is-active" : null)"
+                                             data-slide-index="@index"
+                                             aria-hidden="@(index == 0 ? "false" : "true")">
+                                        <div class="discover-slide-art discover-slide-art--@theme">
+                                            <img src="@game.PosterImageUrl"
+                                                 alt="@game.Name"
+                                                 class="discover-slide-art-image" />
+                                            <span class="discover-slide-brand">@game.Tag.ToUpperInvariant()</span>
+                                        </div>
+                                        <div class="discover-slide-body">
+                                            <h3 class="discover-slide-title">@game.Name</h3>
+                                            <div class="discover-slide-copy">
+                                                <p>Thông tin gói mua:</p>
+                                                <p>&bull; Nhận key kích hoạt tài khoản Steam cá nhân</p>
+                                                <p>&bull; Gửi tự động sau thanh toán, hỗ trợ backup và cài đặt nhanh</p>
+                                            </div>
+                                            <div class="discover-price-row">
+                                                @if (!string.IsNullOrWhiteSpace(game.DiscountText))
+                                                {
+                                                    <span class="discover-discount">@game.DiscountText</span>
+                                                }
+                                                @if (!string.IsNullOrWhiteSpace(game.ReferencePriceText))
+                                                {
+                                                    <span class="discover-old-price">@game.ReferencePriceText</span>
+                                                }
+                                                <strong class="discover-new-price">@game.CurrentPriceText</strong>
+                                            </div>
+                                            <div class="discover-actions">
+                                                <a asp-controller="Product"
+                                                   asp-action="Detail"
+                                                   asp-route-gameId="@game.GameId"
+                                                   asp-route-slug="@game.Slug"
+                                                   class="discover-btn discover-btn--primary">
+                                                    Mua Ngay
+                                                </a>
+                                                <a href="#" class="discover-btn discover-btn--ghost">Yêu Thích</a>
+                                            </div>
+                                        </div>
+                                    </article>
+                                }
+                            </div>
+
+                            @if (spotlightGames.Length > 1)
+                            {
+                                <button class="discover-control discover-control--next"
+                                        type="button"
+                                        aria-label="Slide tiếp theo">
+                                    <i class="bi bi-chevron-right"></i>
+                                </button>
+                            }
+                        </div>
+
+                        @if (spotlightGames.Length > 1)
+                        {
+                            <div class="discover-dots" role="tablist" aria-label="Chọn slide game">
+                                @for (var index = 0; index < spotlightGames.Length; index++)
+                                {
+                                    <button class="discover-dot @(index == 0 ? "is-active" : null)"
+                                            type="button"
+                                            data-slide-to="@index"
+                                            aria-label="Slide @(index + 1)"
+                                            aria-pressed="@(index == 0 ? "true" : "false")"></button>
+                                }
+                            </div>
+                        }
                     </div>
-                }
+
+                    <aside class="discover-sidebar" aria-label="Danh sách game nổi bật">
+                        @for (var index = 0; index < spotlightGames.Length; index++)
+                        {
+                            var game = spotlightGames[index];
+                            var theme = discoverThemes[index % discoverThemes.Length];
+
+                            <button class="discover-side-item @(index == 0 ? "is-active" : null)"
+                                    type="button"
+                                    data-slide-to="@index">
+                                <span class="discover-side-thumb discover-side-thumb--@theme">
+                                    <img src="@game.PosterImageUrl"
+                                         alt="@game.Name"
+                                         class="discover-side-thumb-image" />
+                                </span>
+                                <span class="discover-side-copy">@game.Name</span>
+                            </button>
+                        }
+                    </aside>
+                </div>
+            </div>
+        </section>
+    }
+
+    <section class="random-keys-section" aria-labelledby="randomKeysTitle">
+        <div class="container">
+            <h2 id="randomKeysTitle" class="random-keys-title">Random Key Steam</h2>
+
+            <div class="random-keys-grid">
+                <article class="random-keys-card random-keys-card--common">
+                    <a href="#" class="random-keys-link" aria-label="Mua Random Code Steam Product 29k đến 199k">
+                        <div class="random-keys-visual">
+                            <span class="random-keys-badge">Kích hoạt steam cá nhân</span>
+                            <img src="~/ui/assets/img/box_01.png"
+                                 asp-append-version="true"
+                                 alt="Mystery Box Common"
+                                 class="random-keys-image" />
+                        </div>
+
+                        <div class="random-keys-body">
+                            <h3 class="random-keys-name">Random Code Steam Product 29k - 199k</h3>
+                            <div class="random-keys-price-row">
+                                <span class="random-keys-discount">-71%</span>
+                                <span class="random-keys-old-price">99.000 đ</span>
+                                <strong class="random-keys-new-price">29.000 đ</strong>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="random-keys-card random-keys-card--rare">
+                    <a href="#" class="random-keys-link" aria-label="Mua Random Code Steam Product 200k đến 499k">
+                        <div class="random-keys-visual">
+                            <span class="random-keys-badge">Kích hoạt steam cá nhân</span>
+                            <img src="~/ui/assets/img/box_02.png"
+                                 asp-append-version="true"
+                                 alt="Mystery Box Rare"
+                                 class="random-keys-image" />
+                        </div>
+
+                        <div class="random-keys-body">
+                            <h3 class="random-keys-name">Random Code Steam Product 200k - 499k</h3>
+                            <div class="random-keys-price-row">
+                                <span class="random-keys-discount">-76%</span>
+                                <span class="random-keys-old-price">200.000 đ</span>
+                                <strong class="random-keys-new-price">49.000 đ</strong>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="random-keys-card random-keys-card--epic">
+                    <a href="#" class="random-keys-link" aria-label="Mua Random Code Steam Product 500k đến 799k">
+                        <div class="random-keys-visual">
+                            <span class="random-keys-badge">Kích hoạt steam cá nhân</span>
+                            <img src="~/ui/assets/img/box_03.png"
+                                 asp-append-version="true"
+                                 alt="Mystery Box Epic"
+                                 class="random-keys-image" />
+                        </div>
+
+                        <div class="random-keys-body">
+                            <h3 class="random-keys-name">Random Code Steam Product 500k - 799k</h3>
+                            <div class="random-keys-price-row">
+                                <span class="random-keys-discount">-84%</span>
+                                <span class="random-keys-old-price">499.000 đ</span>
+                                <strong class="random-keys-new-price">79.000 đ</strong>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="random-keys-card random-keys-card--legendary">
+                    <a href="#" class="random-keys-link" aria-label="Mua Random Code Steam Product 800k đến 1199k">
+                        <div class="random-keys-visual">
+                            <span class="random-keys-badge">Kích hoạt steam cá nhân</span>
+                            <img src="~/ui/assets/img/box_04.png"
+                                 asp-append-version="true"
+                                 alt="Mystery Box Legendary"
+                                 class="random-keys-image" />
+                        </div>
+
+                        <div class="random-keys-body">
+                            <h3 class="random-keys-name">Random Code Steam Product 800k - 1199k</h3>
+                            <div class="random-keys-price-row">
+                                <span class="random-keys-discount">-84%</span>
+                                <span class="random-keys-old-price">799.000 đ</span>
+                                <strong class="random-keys-new-price">129.000 đ</strong>
+                            </div>
+                        </div>
+                    </a>
+                </article>
+
+                <article class="random-keys-card random-keys-card--ultimate">
+                    <a href="#" class="random-keys-link" aria-label="Mua Random Code Steam Product 1200k đến 2499k">
+                        <div class="random-keys-visual">
+                            <span class="random-keys-badge">Kích hoạt steam cá nhân</span>
+                            <img src="~/ui/assets/img/box_05.png"
+                                 asp-append-version="true"
+                                 alt="Mystery Box Ultimate"
+                                 class="random-keys-image" />
+                        </div>
+
+                        <div class="random-keys-body">
+                            <h3 class="random-keys-name">Random Code Steam Product 1200k - 2499k</h3>
+                            <div class="random-keys-price-row">
+                                <span class="random-keys-discount">-82%</span>
+                                <span class="random-keys-old-price">999.000 đ</span>
+                                <strong class="random-keys-new-price">179.000 đ</strong>
+                            </div>
+                        </div>
+                    </a>
+                </article>
             </div>
         </div>
     </section>
 
-    <section class="aaa-games-section" aria-labelledby="aaaGamesTitle">
-        <div class="container">
-            <h2 id="aaaGamesTitle" class="aaa-games-title">Game Bom Tấn AAA</h2>
+    @if (Model.Categories.Count > 0)
+    {
+        foreach (var categorySection in Model.Categories)
+        {
+            <section class="aaa-games-section" aria-labelledby="category-@categorySection.Slug">
+                <div class="container">
+                    <h2 id="category-@categorySection.Slug" class="aaa-games-title">@categorySection.Name</h2>
 
-            @if (Model.Games.Count > 0)
-            {
-                <div class="aaa-games-grid">
-                    @foreach (var game in Model.Games)
-                    {
-                        <article class="aaa-game-card">
-                            <a asp-controller="Product"
-                               asp-action="Detail"
-                               asp-route-gameId="@game.GameId"
-                               asp-route-slug="@game.Slug"
-                               class="aaa-game-link"
-                               aria-label="Mở chi tiết @game.Name">
-                                <div class="aaa-game-poster">
-                                    <span class="aaa-game-badge">@game.Badge</span>
-                                    <img src="@game.PosterImageUrl"
-                                         alt="@game.Name"
-                                         class="aaa-game-image"
-                                         loading="lazy" />
-                                </div>
-
-                                <div class="aaa-game-body">
-                                    <span class="aaa-game-tag">@game.Tag</span>
-                                    <h3 class="aaa-game-name">@game.Name</h3>
-                                    <div class="aaa-game-price-row">
-                                        @if (!string.IsNullOrWhiteSpace(game.DiscountText))
-                                        {
-                                            <span class="aaa-game-discount">@game.DiscountText</span>
-                                        }
-                                        @if (!string.IsNullOrWhiteSpace(game.ReferencePriceText))
-                                        {
-                                            <span class="aaa-game-old-price">@game.ReferencePriceText</span>
-                                        }
-                                        <strong class="aaa-game-new-price">@game.CurrentPriceText</strong>
+                    <div class="aaa-games-grid">
+                        @foreach (var game in categorySection.Games)
+                        {
+                            <article class="aaa-game-card">
+                                <a asp-controller="Product"
+                                   asp-action="Detail"
+                                   asp-route-gameId="@game.GameId"
+                                   asp-route-slug="@game.Slug"
+                                   class="aaa-game-link"
+                                   aria-label="Mua @game.Name">
+                                    <div class="aaa-game-poster">
+                                        <span class="aaa-game-badge">@game.Badge</span>
+                                        <img src="@game.PosterImageUrl"
+                                             alt="@game.Name"
+                                             class="aaa-game-image"
+                                             loading="lazy" />
                                     </div>
-                                </div>
-                            </a>
-                        </article>
-                    }
+
+                                    <div class="aaa-game-body">
+                                        <span class="aaa-game-tag">@game.Tag</span>
+                                        <h3 class="aaa-game-name">@game.Name</h3>
+                                        <div class="aaa-game-price-row">
+                                            @if (!string.IsNullOrWhiteSpace(game.DiscountText))
+                                            {
+                                                <span class="aaa-game-discount">@game.DiscountText</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(game.ReferencePriceText))
+                                            {
+                                                <span class="aaa-game-old-price">@game.ReferencePriceText</span>
+                                            }
+                                            <strong class="aaa-game-new-price">@game.CurrentPriceText</strong>
+                                        </div>
+                                    </div>
+                                </a>
+                            </article>
+                        }
+                    </div>
                 </div>
-            }
-            else
-            {
+            </section>
+        }
+    }
+    else
+    {
+        <section class="aaa-games-section" aria-labelledby="emptyStorefrontTitle">
+            <div class="container">
                 <div class="storefront-empty-state">
-                    <strong>Chưa có game nào sẵn sàng hiển thị.</strong>
-                    <span>Hãy gán `Steam App ID` cho game trong admin workspace để card sản phẩm xuất hiện tại đây.</span>
+                    <strong id="emptyStorefrontTitle">Chưa có game nào sẵn sàng hiển thị.</strong>
+                    <span>Hãy gắn Steam App ID, giá bán và category Published trong admin workspace để storefront hiển thị dữ liệu.</span>
                 </div>
-            }
-        </div>
-    </section>
+            </div>
+        </section>
+    }
 </main>

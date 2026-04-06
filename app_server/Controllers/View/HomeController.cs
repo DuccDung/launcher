@@ -23,14 +23,12 @@ public sealed class HomeController(LauncherDbContext dbContext, ILogger<HomeCont
                            (keyword == null ||
                             item.Name.Contains(keyword) ||
                             item.GameCategories.Any(category => category.Category != null && category.Category.Name.Contains(keyword))))
-            .OrderByDescending(item => item.UpdatedAt)
-            .Take(24)
+            .OrderByDescending(item => item.IsTrending)
+            .ThenByDescending(item => item.UpdatedAt)
+            .Take(60)
             .ToListAsync(cancellationToken);
 
-        var model = new StorefrontHomeViewModel
-        {
-            Games = games.Select(StorefrontViewModelFactory.ToProductCard).ToArray()
-        };
+        var model = StorefrontViewModelFactory.ToHome(games);
 
         ViewData["Title"] = "Deluxe Gaming";
         ViewData["StoreActive"] = "home";

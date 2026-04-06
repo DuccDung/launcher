@@ -3,6 +3,10 @@ namespace app_server.ViewModels.Storefront;
 public sealed class StorefrontHomeViewModel
 {
     public IReadOnlyList<ProductCardViewModel> Games { get; init; } = [];
+
+    public IReadOnlyList<ProductCardViewModel> SpotlightGames { get; init; } = [];
+
+    public IReadOnlyList<StorefrontCategorySectionViewModel> Categories { get; init; } = [];
 }
 
 public sealed class ProductCardViewModel
@@ -19,11 +23,24 @@ public sealed class ProductCardViewModel
 
     public string Tag { get; init; } = "Steam";
 
+    public bool IsTrending { get; init; }
+
+    public IReadOnlyList<string> CategoryNames { get; init; } = [];
+
     public string CurrentPriceText { get; init; } = string.Empty;
 
     public string? ReferencePriceText { get; init; }
 
     public string? DiscountText { get; init; }
+}
+
+public sealed class StorefrontCategorySectionViewModel
+{
+    public string Name { get; init; } = string.Empty;
+
+    public string Slug { get; init; } = string.Empty;
+
+    public IReadOnlyList<ProductCardViewModel> Games { get; init; } = [];
 }
 
 public sealed class ProductDetailViewModel

@@ -9,13 +9,91 @@ namespace app_server.Services.Storefront;
 
 public static partial class StorefrontViewModelFactory
 {
+    private static readonly CultureInfo ViVnCulture = CultureInfo.GetCultureInfo("vi-VN");
+
+    public static StorefrontHomeViewModel ToHome(IReadOnlyList<Game> games)
+    {
+        var cards = games
+            .Select(ToProductCard)
+            .ToArray();
+
+        var cardsById = cards.ToDictionary(item => item.GameId);
+        var spotlightGames = cards
+            .Where(item => item.IsTrending)
+            .Take(6)
+            .ToList();
+
+        if (spotlightGames.Count < 6)
+        {
+            spotlightGames.AddRange(cards
+                .Where(item => spotlightGames.All(existing => existing.GameId != item.GameId))
+                .Take(6 - spotlightGames.Count));
+        }
+
+        var categories = games
+            .SelectMany(game => game.GameCategories
+                .Where(item => item.Category is not null &&
+                               string.Equals(item.Category.Status, "Published", StringComparison.OrdinalIgnoreCase))
+                .Select(item => new
+                {
+                    item.Category.CategoryId,
+                    Name = item.Category.Name.Trim(),
+                    Slug = string.IsNullOrWhiteSpace(item.Category.Slug)
+                        ? Slugify(item.Category.Name)
+                        : item.Category.Slug.Trim(),
+                    item.Category.DisplayOrder,
+                    game.GameId,
+                    game.UpdatedAt
+                }))
+            .GroupBy(item => new
+            {
+                item.CategoryId,
+                item.Name,
+                item.Slug,
+                item.DisplayOrder
+            })
+            .OrderBy(item => item.Key.DisplayOrder)
+            .ThenBy(item => item.Key.Name)
+            .Select(item => new StorefrontCategorySectionViewModel
+            {
+                Name = item.Key.Name,
+                Slug = item.Key.Slug,
+                Games = item
+                    .OrderByDescending(entry => cardsById[entry.GameId].IsTrending)
+                    .ThenByDescending(entry => entry.UpdatedAt)
+                    .Select(entry => cardsById[entry.GameId])
+                    .DistinctBy(entry => entry.GameId)
+                    .ToArray()
+            })
+            .Where(item => item.Games.Count > 0)
+            .ToArray();
+
+        if (categories.Length == 0 && cards.Length > 0)
+        {
+            categories =
+            [
+                new StorefrontCategorySectionViewModel
+                {
+                    Name = "Tat ca game",
+                    Slug = "tat-ca-game",
+                    Games = cards
+                }
+            ];
+        }
+
+        return new StorefrontHomeViewModel
+        {
+            Games = cards,
+            SpotlightGames = spotlightGames,
+            Categories = categories
+        };
+    }
+
     public static ProductCardViewModel ToProductCard(Game game)
     {
         var displayName = string.IsNullOrWhiteSpace(game.Name) ? "Steam Product" : game.Name.Trim();
-        var tag = game.GameCategories
-            .Select(item => item.Category?.Name)
-            .FirstOrDefault(item => !string.IsNullOrWhiteSpace(item))
-            ?? "Steam";
+        var categoryNames = BuildCategoryNames(game);
+        var tag = categoryNames.FirstOrDefault() ?? "Steam";
 
         var primaryVersion = ResolvePrimaryVersion(game);
         var currentPrice = ResolveCurrentPrice(game, primaryVersion);
@@ -28,7 +106,10 @@ public static partial class StorefrontViewModelFactory
             Slug = Slugify(displayName),
             Name = displayName,
             PosterImageUrl = ResolvePosterImage(game),
+            Badge = "K\u00edch ho\u1ea1t steam c\u00e1 nh\u00e2n",
             Tag = tag,
+            IsTrending = game.IsTrending,
+            CategoryNames = categoryNames,
             CurrentPriceText = FormatMoney(currentPrice, isFree: false),
             ReferencePriceText = ShouldShowReferencePrice(referencePrice, currentPrice)
                 ? FormatMoney(referencePrice, isFree: false)
@@ -139,6 +220,33 @@ public static partial class StorefrontViewModelFactory
             .OrderBy(item => item.CreatedAt)
             .ThenBy(item => item.VersionName)
             .FirstOrDefault();
+    }
+
+    private static IReadOnlyList<string> BuildCategoryNames(Game game)
+    {
+        var publishedCategoryNames = game.GameCategories
+            .Where(item => item.Category is not null &&
+                           string.Equals(item.Category.Status, "Published", StringComparison.OrdinalIgnoreCase))
+            .OrderBy(item => item.Category!.DisplayOrder)
+            .ThenBy(item => item.Category!.Name)
+            .Select(item => item.Category!.Name.Trim())
+            .Where(item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
+
+        if (publishedCategoryNames.Length > 0)
+        {
+            return publishedCategoryNames;
+        }
+
+        return game.GameCategories
+            .Where(item => item.Category is not null)
+            .OrderBy(item => item.Category!.DisplayOrder)
+            .ThenBy(item => item.Category!.Name)
+            .Select(item => item.Category!.Name.Trim())
+            .Where(item => !string.IsNullOrWhiteSpace(item))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 
     private static decimal? ResolveCurrentPrice(Game game, GameVersion? primaryVersion)
@@ -458,20 +566,20 @@ public static partial class StorefrontViewModelFactory
     {
         if (value is > 0)
         {
-            return $"{value.Value:N0} VND";
+            return $"{value.Value.ToString("N0", ViVnCulture)} \u0111";
         }
 
         if (isFree)
         {
-            return "Mien phi";
+            return "Mi\u1ec5n ph\u00ed";
         }
 
         if (value == 0)
         {
-            return "0 VND";
+            return $"0 \u0111";
         }
 
-        return "Lien he";
+        return "Li\u00ean h\u1ec7";
     }
 
     private static bool ShouldShowReferencePrice(decimal? referencePrice, decimal? currentPrice)
